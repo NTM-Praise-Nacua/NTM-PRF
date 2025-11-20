@@ -9,9 +9,9 @@
     </style>
 @endpush
 
-<div class="navbar border mb-2">
-    <a class="navbar-brand" href="{{ url('/') }}">
-        PRF
+<div class="navbar justify-content-center border mb-2 fw-bold">
+    <a class="navbar-brand text-white" href="{{ url('/') }}">
+        PR LOGO
     </a>
 </div>
 

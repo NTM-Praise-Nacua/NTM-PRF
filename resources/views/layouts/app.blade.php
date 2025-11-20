@@ -34,9 +34,11 @@
 </head>
 <body>
     <div id="app" class="d-flex container-fluid p-0 vh-100">
+        @auth
         <div class="sidebar h-100 d-flex flex-column">
             @include('layouts.include.sidebar')
         </div>
+        @endauth
         <div class="d-flex flex-column flex-grow-1">
             <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
                 <div class="container">

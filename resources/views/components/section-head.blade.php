@@ -8,4 +8,7 @@
 @endpush
 <div class="section-head text-white py-1 fst-italic">
     {{ $headTitle }}
+    @if ($headerButton ?? false)
+    <button type="button" class="btn btn-sm btn-secondary mx-3">{{ $buttonLabel ?? 'nolabel' }}</button>
+    @endif
 </div>
