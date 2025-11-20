@@ -28,6 +28,22 @@
         .footer {
             height: 50px;
         }
+        .circle {
+            height: 45px;
+            width: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tab-link {
+            color: white;
+        }
+        .tab-link:hover {
+            color: lightgray;
+        }
+        .active-current {
+            background: #00598a !important;
+        }
     </style>
 
     @stack('css')
@@ -35,12 +51,12 @@
 <body>
     <div id="app" class="d-flex container-fluid p-0 vh-100">
         @auth
-        <div class="sidebar h-100 d-flex flex-column">
+        <div class="sidebar position-sticky h-100 d-flex flex-column">
             @include('layouts.include.sidebar')
         </div>
         @endauth
-        <div class="d-flex flex-column flex-grow-1">
-            <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
+        <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
+            <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm position-sticky top-0" style="z-index: 5;">
                 <div class="container">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                         <span class="navbar-toggler-icon"></span>
@@ -95,9 +111,11 @@
                 @yield('content')
             </main>
 
+            @auth
             <footer class="footer border">
                 @include('layouts.include.footer')
             </footer>
+            @endauth
         </div>
     </div>
 </body>

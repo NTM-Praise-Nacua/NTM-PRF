@@ -25,13 +25,6 @@
         .tagLabel:active {
             cursor: grabbing;
         }
-        .circle {
-            height: 45px;
-            width: 45px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
     </style>
 @endpush
 

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PurchaseRequisitionForm;
 use Illuminate\Http\Request;
 
-class PurchaseRequisitionFormController extends Controller
+class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,17 +13,7 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function index()
     {
-        return view('admin.approval');
-    }
-
-    public function showForm()
-    {
-        return view('users.requisition-form');
-    }
-
-    public function showHistory()
-    {
-        return view('users.requisition-history');
+        return view("users.list");
     }
 
     /**
@@ -51,10 +40,10 @@ class PurchaseRequisitionFormController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\PurchaseRequisitionForm  $purchaseRequisitionForm
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(PurchaseRequisitionForm $purchaseRequisitionForm)
+    public function show($id)
     {
         //
     }
@@ -62,10 +51,10 @@ class PurchaseRequisitionFormController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\PurchaseRequisitionForm  $purchaseRequisitionForm
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(PurchaseRequisitionForm $purchaseRequisitionForm)
+    public function edit($id)
     {
         //
     }
@@ -74,10 +63,10 @@ class PurchaseRequisitionFormController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\PurchaseRequisitionForm  $purchaseRequisitionForm
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PurchaseRequisitionForm $purchaseRequisitionForm)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -85,10 +74,10 @@ class PurchaseRequisitionFormController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\PurchaseRequisitionForm  $purchaseRequisitionForm
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PurchaseRequisitionForm $purchaseRequisitionForm)
+    public function destroy($id)
     {
         //
     }
