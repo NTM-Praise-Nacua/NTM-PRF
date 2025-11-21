@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PurchaseRequisitionFormController;
+use App\Http\Controllers\RequestTypeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -30,4 +31,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/requisition/history', [PurchaseRequisitionFormController::class, 'showHistory'])->name('requisition.history');
     
     Route::get('/users', [UserController::class, 'index'])->name('user.list');
+
+    Route::post('/request/add', [RequestTypeController::class, 'store'])->name('add.request.type');
 });

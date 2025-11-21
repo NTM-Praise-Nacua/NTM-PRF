@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseRequisitionForm;
+use App\Services\RequestTypeService;
 use Illuminate\Http\Request;
 
 class PurchaseRequisitionFormController extends Controller
 {
+    protected $requestType;
+
+    public function __construct(RequestTypeService $service)
+    {
+        $this->requestType = $service;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -14,7 +22,9 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function index()
     {
-        return view('admin.approval');
+        $requestTypes = $this->requestType->getRequestType();
+
+        return view('admin.approval', compact('requestTypes'));
     }
 
     public function showForm()

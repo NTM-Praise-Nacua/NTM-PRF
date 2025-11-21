@@ -1,1 +1,1 @@
-Rights.
+{{ date('Y') }}

@@ -11,7 +11,7 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
-
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
@@ -27,6 +27,8 @@
         }
         .footer {
             height: 50px;
+            min-height: 50px;
+            background: #f3f4f6;
         }
         .circle {
             height: 45px;
@@ -38,11 +40,14 @@
         .tab-link {
             color: white;
         }
-        .tab-link:hover {
-            color: lightgray;
+        .tab-link:not(.active-current):hover {
+            opacity: 0.75;
         }
-        .active-current {
+        .active-current, .sidenav {
             background: #00598a !important;
+        }
+        .active-current:hover {
+            color: lightgray !important;
         }
     </style>
 
@@ -107,16 +112,17 @@
                 </div>
             </nav>
     
-            <main class="p-4 border flex-grow-1">
+            <main class="p-4 flex-grow-1">
                 @yield('content')
             </main>
 
             @auth
-            <footer class="footer border">
+            <footer class="footer border-top d-flex align-items-center ps-3">
                 @include('layouts.include.footer')
             </footer>
             @endauth
         </div>
     </div>
+    @stack('js')
 </body>
 </html>
