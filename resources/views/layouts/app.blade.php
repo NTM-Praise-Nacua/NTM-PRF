@@ -25,6 +25,15 @@
             min-width: 250px;
             background: #024a70;
         }
+        #usersDropdown {
+            background: #033D5E;
+        }
+        #usersDropdown .nav-item {
+            border-radius: 5px;
+        }
+        #usersDropdown .nav-item:hover {
+            background: #024a70;
+        }
         .footer {
             height: 50px;
             min-height: 50px;
@@ -42,11 +51,12 @@
         }
         .tab-link:not(.active-current):hover {
             opacity: 0.75;
+            background: #025178;
         }
         .active-current, .sidenav {
             background: #00598a !important;
         }
-        .active-current:hover {
+        .active-current:hover, {
             color: lightgray !important;
         }
     </style>

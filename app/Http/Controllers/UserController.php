@@ -16,6 +16,11 @@ class UserController extends Controller
         return view("users.list");
     }
 
+    public function userDepartment()
+    {
+        return view('users.department');
+    }
+
     /**
      * Show the form for creating a new resource.
      *

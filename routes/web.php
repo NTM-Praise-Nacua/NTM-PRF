@@ -32,6 +32,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/requisition/history', [PurchaseRequisitionFormController::class, 'showHistory'])->name('requisition.history');
     
     Route::get('/users', [UserController::class, 'index'])->name('user.list');
+    Route::get('/users-department', [UserController::class, 'userDepartment'])->name('user.department');
 
     Route::post('/request/add', [RequestTypeController::class, 'store'])->name('add.request.type');
 });
