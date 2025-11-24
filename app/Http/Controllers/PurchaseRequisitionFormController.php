@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseRequisitionForm;
+use App\Models\RequestType;
+use App\Models\UploadedFile;
 use App\Services\RequestTypeService;
 use Illuminate\Http\Request;
 
@@ -25,6 +27,38 @@ class PurchaseRequisitionFormController extends Controller
         $requestTypes = $this->requestType->getRequestType();
 
         return view('admin.approval', compact('requestTypes'));
+    }
+
+    public function uploadPdf(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf',
+            'request_type' => 'required|string',
+        ]);
+
+        $requestType = RequestType::where('slug', $request->request_type)->first();
+        $requestId = $requestType->id;
+
+
+        $file = $request->file('file');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('pdfs', $filename, 'public');
+
+        $uploadedFile = UploadedFile::create([
+            'uploaded_by' => auth()->user()->id,
+            'original_name' => $file->getClientOriginalName(),
+            'stored_name' => $filename,
+            'path' => $path,
+            'size' => $file->getSize(),
+            'type' => $file->getClientMimeType(),
+            'request_type_id' => $requestId,
+        ]);
+
+
+        return response()->json([
+            'message' => 'successful',
+            'url' => $uploadedFile
+        ]);
     }
 
     public function showForm()

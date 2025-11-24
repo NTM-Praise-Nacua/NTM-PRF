@@ -27,6 +27,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     
     Route::get('/approval-setup', [PurchaseRequisitionFormController::class, 'index'])->name('approval.setup');
+    Route::post('/approval-setup/uploadPDF', [PurchaseRequisitionFormController::class, 'uploadPdf'])->name('approval.upload.pdf');
     Route::get('/requisition/form', [PurchaseRequisitionFormController::class, 'showForm'])->name('requisition.form');
     Route::get('/requisition/history', [PurchaseRequisitionFormController::class, 'showHistory'])->name('requisition.history');
     
