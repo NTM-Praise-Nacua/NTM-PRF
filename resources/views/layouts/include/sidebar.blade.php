@@ -7,7 +7,8 @@
 @php
     $activeDropdown = in_array(url()->current(), [
         route('user.list'),
-        route('department.list')
+        route('department.list'),
+        route('position.list'),
     ]);
 @endphp
 
@@ -30,6 +31,11 @@
             <li class="nav-item ps-2 {{ url()->current() == route('department.list') ? 'active-current' : '' }}">
                 <a href="{{ route('department.list') }}" class="nav-link text-white">
                     Departments
+                </a>
+            </li>
+            <li class="nav-item ps-2 {{ url()->current() == route('position.list') ? 'active-current' : '' }}">
+                <a href="{{ route('position.list') }}" class="nav-link text-white">
+                    Positions
                 </a>
             </li>
         </ul>

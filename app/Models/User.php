@@ -66,7 +66,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function departments()
+    public function createdDepartments()
     {
         return $this->hasMany(Department::class, 'created_by', 'id');
     }
@@ -79,5 +79,20 @@ class User extends Authenticatable
     public function createdUsers()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function createdPositions()
+    {
+        return $this->hasMany(Position::class, 'created_by');
+    }
+
+    public function position()
+    {
+        return $this->hasOne(Position::class, 'id', 'position_id');
+    }
+
+    public function department()
+    {
+        return $this->hasOne(Department::class, 'id', 'department_id');
     }
 }

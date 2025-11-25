@@ -76,30 +76,34 @@
 
         <div class="row p-3 ">
             <div class="col-3 card-selector-wrapper">
-                <div class="card pt-3 px-2 pb-1 mb-3">
+                <div class="card pt-3 px-2 pb-1 mb-2 request-card">
                     <h5 class="card-title">Request Type</h5>
-                    <div class="card-body px-0">
-                        <select name="request_type" id="request_type" class="form-select">
+                    <div class="card-body px-0 pb-1">
+                        <select name="request_type" id="request_type" class="form-select mb-2">
                             <option value="" selected hidden>Choose Type</option>
                             @forelse ($requestTypes as $type)
-                                <option value="{{ $type->slug }}">{{ $type->name }}</option>
+                                <option value="{{ $type->id }}">{{ $type->name }}</option>
                             @empty
                                 <option value="">No Request Types Found</option>
                             @endforelse
                         </select>
+                        <button type="button" class="btn btn-primary" id="addOrdering">
+                            Add Tag
+                        </button>
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-primary" id="addOrdering">
-                    + Add
-                </button>
 
-                {{-- <form action="{{ route('add.request.type') }}" method="post">
-                    @csrf
-                    <input type="text" name="name" placeholder="Name" class="form-control">
-                    <input type="text" name="slug" placeholder="Slug" class="form-control">
-                    <button class="btn btn-outline-primary" type="submit">submit</button>
-                </form> --}}
+                <div class="card pt-3 px-2">
+                    <h5 class="card-title">Add Request</h5>
+                    <div class="card-body px-0 pb-2">
+                        <form action="{{ route('add.request.type') }}" method="post">
+                            @csrf
+                            <input type="text" name="name" placeholder="Name" class="form-control mb-2">
+                            <button class="btn btn-primary" type="submit">Add Type</button>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="col">
                 <div class="flex-area d-flex flex-column flex-wrap border rounded overflow-x-auto p-4 inner-shadow position-relative" style="height: 350px; row-gap: 16px; column-gap: 16px; background:#f5f5f4;">
@@ -123,6 +127,105 @@
 @push('js')
     <script>
         $('#addOrdering').on('click', function() {
+            addTagLabel();
+        });
+
+        $(document).on('click', '.popClose', function() {
+            if ($('.tag-main').length <= 0) {
+                $('.submit-ordering').remove();
+            }
+        });
+
+        $(document).on('click', '.submit-ordering', function() {
+            const requestType = $('select[name="request_type"]').val();
+            if (requestType == "") {
+                alertMessage('Choose Request Type', 'warning');
+            } else {
+                const tagLabel = $('.tagLabel select[name="department"]');
+                const emptyTag = tagLabel.filter(function() {
+                    return $(this).val() === ""
+                });
+
+                let ordering = [];
+                let orderingData = [];
+
+                if (emptyTag.length > 0) {
+                    alertMessage('Please Select Department(s) in the workflow', 'warning');
+                } else {
+                    ordering = tagLabel
+                        .map(function() {
+                            return {
+                                orderId: $(this).val(), 
+                                id: $(this).data().id
+                            };
+                        })
+                        .get();
+                }
+
+                console.log("ordering: ", ordering);
+                // console.log("ordering data: ", orderingData);
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('requestType', requestType);
+                formData.append('_token', token);
+                ordering.forEach((order, index) => {
+                    formData.append(`ordering[${index}][orderId]`, order.orderId);
+                    formData.append(`ordering[${index}][id]`, order.id);
+                });
+                
+                $.ajax({
+                    url: '{{ route("prf.add.ordering") }}',
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        const response = JSON.parse(res);
+                        console.log("response: ", res);
+                        console.log("response: ", response);
+                        alertMessage(response.message, response.status);
+                    }, error: function (xhr) {
+                        console.error("error: ", xhr);
+                    }
+                });
+            }
+        });
+
+        $('#request_type').on('change', function() {
+            $('.flex-area').empty();
+            $('.submit-ordering').remove();
+            fetchDataFlow($(this).val());
+        });
+
+        function fetchDataFlow(id) {
+            const token = $('meta[name="csrf-token"]').attr('content');
+            const formData = new FormData();
+            formData.append('request_id', id);
+            formData.append('_token', token);
+
+            $.ajax({
+                url: '{{ route("type.flow") }}',
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    const res = JSON.parse(response);
+                    console.log('res: ', res);
+                    // addTagLabel(res.data);
+                    res.data.forEach(item => {
+                        addTagLabel(item.ordering, item.id);
+                    });
+                },
+                error: function(xhr, error) {
+                    alertMessage("Something went wrong!", "error");
+                    console.error('error: ', xhr);
+                    console.error('error: ', error);
+                }
+            });
+        }
+
+        function addTagLabel(orderingId = "", prflowId = "") {
             const mainWrapper = $('<div></div>');
             mainWrapper.addClass('tag-main position-relative');
             const divWrapper = $('<div></div>');
@@ -148,7 +251,7 @@
             const emptyOpt = $('<option></option>');
             emptyOpt.text('Department')
                 .attr('hidden', true)
-                .attr('selected', true)
+                .attr('selected', orderingId ? false : true)
                 .attr('value', "");
             dropDown.append(emptyOpt);
 
@@ -157,10 +260,13 @@
                 
             departments.forEach(el => {
                 const option = $('<option></option>');
-                option.val(el.shortcut);
-                option.text(el.shortcut);
+                option.val(el.id);
+                option.text(el.shortcut)
+                    .attr('selected', orderingId == el.id ? true : false);
                 dropDown.append(option);
             });
+
+            dropDown.data('id', prflowId);
 
             const tagLabels = $('.tagLabel');
             circle.text(tagLabels.length + 1);
@@ -168,12 +274,12 @@
             if ($('.card-selector-wrapper').find('.submit-ordering').length <= 0) {
                 const submitBtn = $('<button></button>');
                 submitBtn.attr('type', 'button');
-                submitBtn.addClass('submit-ordering btn btn-success float-end me-3 mb-3 shadow');
+                submitBtn.addClass('submit-ordering btn btn-success float-end shadow');
                 submitBtn.css({
                     zIndex: 5
                 });
                 submitBtn.text('Save Ordering');
-                $('.card-selector-wrapper').append(submitBtn);
+                $('.card-selector-wrapper .request-card .card-body').append(submitBtn);
             }
 
             dropdownWrapper.append(dropDown);
@@ -182,50 +288,7 @@
             mainWrapper.append(divWrapper, close);
 
             $('.flex-area').append(mainWrapper);
-        });
-
-        $(document).on('click', '.submit-ordering', function() {
-            const requestType = $('select[name="request_type"]').val();
-            if (requestType == "") {
-                alertMessage('Choose Request Type', 'warning');
-            } else {
-                const tagLabel = $('.tagLabel select[name="department"]');
-                const emptyTag = tagLabel.filter(function() {
-                    return $(this).val() === ""
-                });
-
-                let ordering = [];
-
-                if (emptyTag.length > 0) {
-                    alertMessage('Please Select Department(s) in the workflow', 'warning');
-                } else {
-                    ordering = tagLabel
-                        .map(function() {
-                            return $(this).val();
-                        })
-                        .get();
-                }
-
-                const token = $('meta[name="csrf-token"]').attr('content');
-                const formData = new FormData();
-                formData.append('requestType', requestType);
-                formData.append('ordering', ordering);
-                formData.append('_token', token)
-
-                $.ajax({
-                    url: '{{ route("requisition.form.add") }}',
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (res) {
-                        console.log("response: ", res);
-                    }, error: function (xhr) {
-                        console.error("error: ", xhr);
-                    }
-                });
-            }
-        });
+        }
 
         function remove(el) {
             const parent = $(el).parent();
@@ -289,7 +352,6 @@
                 alertMessage('Upload only PDF Files', 'warning');
             }
         });
-
         
         function handlePDFUploads(file) {
             const fileWrapper = $('.file-details');
@@ -345,13 +407,13 @@
             fileWrapper.append(table, submitButton);
         }
 
-        $('.file-details').on('click', '.submitFile', (e) => { 
+        $('.file-details').on('click', '.submitFile', function(e) { 
             const requestType = $('#request_type').val();
             if (requestType != "") {
-                const file = $(this).data('file')
+                const file = $(this).data('file');
                 handlePDFSubmit(file, requestType);
             } else {
-                alert("Select a Request Type");
+                alertMessage("Select a Request Type", "warning");
             }
         });
 
@@ -374,6 +436,7 @@
         function handlePDFSubmit(file, type) {
             const token = $('meta[name="csrf-token"]').attr('content');
             const formData = new FormData();
+            console.log('file: ', file);
             formData.append('file', file);
             formData.append('request_type', type);
             formData.append('_token', token);
@@ -392,9 +455,10 @@
                         alertMessage("Upload File Fail", "error");
                     }
                 },
-                error: function(xhr) {
+                error: function(xhr, error) {
                     alertMessage("Something went wrong!", "error");
                     console.error('error: ', xhr);
+                    console.error('error: ', error);
                 }
             })
         };

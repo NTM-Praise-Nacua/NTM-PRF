@@ -9,6 +9,8 @@ class PRWorkFlowSteps extends Model
 {
     use HasFactory;
 
+    protected $table = 'pr_workflow_steps';
+
     protected $fillable = [
         'type_id',
         'ordering',

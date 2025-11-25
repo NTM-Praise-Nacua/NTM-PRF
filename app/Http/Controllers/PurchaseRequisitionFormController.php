@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\PRWorkFlowSteps;
 use App\Models\PurchaseRequisitionForm;
 use App\Models\RequestType;
 use App\Models\UploadedFile;
@@ -67,7 +68,19 @@ class PurchaseRequisitionFormController extends Controller
 
     public function showForm()
     {
-        return view('users.requisition-form');
+        $requestTypes = RequestType::all();
+        return view('users.requisition-form', compact('requestTypes'));
+    }
+
+    public function savePRF(Request $request)
+    {
+        dd($request->all());
+    }
+
+    public function otherPRFDetails(Request $request)
+    {
+        dd($request->all());
+        
     }
 
     public function showHistory()
@@ -93,7 +106,54 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function store(Request $request)
     {
-        dd($request->all());
+        $request->validate([
+            'ordering' => 'required|array|min:1',
+            'requestType' => 'required',
+        ]);
+
+        $data = [];
+        $ordering = $request->ordering;
+
+        $incomingIds = collect($ordering)
+            ->pluck('id')
+            ->filter()
+            ->toArray();
+
+        PRWorkFlowSteps::where('type_id', $request->requestType)
+            ->whereNotIn('id', $incomingIds)
+            ->delete();
+
+        foreach($ordering as $order) {
+            $data[] = [
+                'type_id' => $request->requestType,
+                'ordering' => (int) $order['orderId'],
+                'id' => (int) $order['id'],
+                'created_by' => auth()->user()->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ];
+        }
+
+        $result = PRWorkFlowSteps::upsert($data, 
+            ['id'], 
+            ['ordering', 'type_id', 'created_by', 'updated_at']
+        );
+        
+        return json_encode([
+            'status' => 'success',
+            'message' => 'Successfully Saved!',
+            'data' => $result
+        ]);
+    }
+
+    public function getTypeFlow(Request $request) 
+    {
+        $requestTypeFlow = PRWorkFlowSteps::where('type_id', $request->request_id)->get();
+
+        return json_encode([
+            'status' => 'success',
+            'data' => $requestTypeFlow
+        ]);
     }
 
     /**

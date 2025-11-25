@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PurchaseRequisitionFormController;
 use App\Http\Controllers\RequestTypeController;
 use App\Http\Controllers\UserController;
@@ -29,8 +30,13 @@ Route::group(['middleware' => 'auth'], function() {
     
     Route::get('/approval-setup', [PurchaseRequisitionFormController::class, 'index'])->name('approval.setup');
     Route::post('/approval-setup/uploadPDF', [PurchaseRequisitionFormController::class, 'uploadPdf'])->name('approval.upload.pdf');
-    Route::post('/approval-setup/add', [PurchaseRequisitionFormController::class, 'store'])->name('requisition.form.add');
+    Route::post('/approval-setup/add', [PurchaseRequisitionFormController::class, 'store'])->name('prf.add.ordering');
+    
+    Route::post('/prf-flow/getDataFlow', [PurchaseRequisitionFormController::class, 'getTypeFlow'])->name('type.flow');
+
     Route::get('/requisition/form', [PurchaseRequisitionFormController::class, 'showForm'])->name('requisition.form');
+    Route::post('/requisition/form', [PurchaseRequisitionFormController::class, 'savePRF'])->name('requisition.form.add');
+    Route::post('/requisition/form-details', [PurchaseRequisitionFormController::class, 'otherPRFDetails'])->name('requisition.other.details');
     Route::get('/requisition/history', [PurchaseRequisitionFormController::class, 'showHistory'])->name('requisition.history');
     
     Route::get('/users', [UserController::class, 'index'])->name('user.list');
@@ -40,6 +46,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/department', [DepartmentController::class, 'index'])->name('department.list');
     Route::get('/department/data', [DepartmentController::class, 'getDepartmentsData'])->name('department.data');
     Route::post('/department/add', [DepartmentController::class, 'store'])->name('department.add');
+
+    Route::get('/position', [PositionController::class, 'index'])->name('position.list');
+    Route::get('/position/data', [PositionController::class, 'getPositionData'])->name('position.data');
+    Route::post('/position/add', [PositionController::class, 'store'])->name('position.add');
 
     Route::post('/request/add', [RequestTypeController::class, 'store'])->name('add.request.type');
 });

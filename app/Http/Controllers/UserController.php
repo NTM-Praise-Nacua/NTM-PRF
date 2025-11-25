@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\Position;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,12 +19,13 @@ class UserController extends Controller
     public function index()
     {
         $departments = Department::where('isActive', 1)->get();
-        return view("users.list", compact('departments'));
+        $positions = Position::all();
+        return view("users.list", compact('departments', 'positions'));
     }
 
     public function getUsersData()
     {
-        $users = User::with (['creator']);
+        $users = User::with (['creator', 'position']);
         return DataTables::of(User::query())
             ->editColumn('created_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
@@ -33,6 +35,12 @@ class UserController extends Controller
             })
             ->editColumn('created_by', function ($row) {
                 return $row->creator->name;
+            })
+            ->editColumn('position_id', function ($row) {
+                return $row->position->name ?? '---';
+            })
+            ->editColumn('department_id', function ($row) {
+                return $row->department->name ?? '---';
             })
             ->rawColumns(['actions'])
             ->make(true);
@@ -61,12 +69,18 @@ class UserController extends Controller
             'last_name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
-            'department' => 'required'
+            'department' => 'required',
+            'position' => 'required',
         ]);
 
         $firstName = $request->first_name;
         $lastName = $request->last_name;
         $fullName = $firstName . " " . $lastName;
+        $contact = $request->contact;
+
+        $position = $request->position;
+        $department = $request->department;
+        
         $email = $request->email;
         $password = Hash::make($request->password);
 
@@ -77,7 +91,10 @@ class UserController extends Controller
             'email' => $email,
             'password' => $password,
             'created_by' => auth()->user()->id,
-            'weak_password' => $request->password
+            'weak_password' => $request->password,
+            'contact_no' => $contact,
+            'department_id' => $department,
+            'position_id' => $position,
         ]);
 
         return redirect()->route('user.list');

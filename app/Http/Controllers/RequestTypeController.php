@@ -35,12 +35,16 @@ class RequestTypeController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required',
-            'slug' => 'required'
         ]);
 
-        $data = RequestType::create($validated);
+        $slug = strtolower(str_replace(' ', '_', $request->name));
+
+        $data = RequestType::create([
+            'name' => $request->name,
+            'slug' => $slug,
+        ]);
 
         return redirect()->route('approval.setup');
     }

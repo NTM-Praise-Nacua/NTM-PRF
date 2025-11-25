@@ -10,6 +10,8 @@
                     <tr>
                         <td>Name</td>
                         <td>Email</td>
+                        <td>Position</td>
+                        <td>Department</td>
                         <td>Date Registered</td>
                         <td>Created by</td>
                         <td>Actions</td>
@@ -60,10 +62,28 @@
                         </div>
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
+                                <input type="text" class="form-control" name="contact" 
+                                id="contact" placeholder="Contact">
+                                <label for="contact">Contact No</label>
+                            </div>
+                            <div class="form-floating col">
+                                <select name="position" id="position" name="position" class="form-select">
+                                    <option value="" selected hidden>Select Position</option>
+                                    @forelse ($positions as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @empty
+                                        {{--  --}}
+                                    @endforelse
+                                </select>
+                                <label for="position">Position</label>
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3 gap-2">
+                            <div class="form-floating col">
                                 <select name="department" id="department" name="department" class="form-select">
                                     <option value="" selected hidden>Select Department</option>
                                     @forelse ($departments as $item)
-                                        <option value="{{ $item->shortcut }}">{{ $item->name }}</option>
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
                                     @empty
                                         {{--  --}}
                                     @endforelse
@@ -90,6 +110,8 @@
                 columns: [
                     {data: 'name'},
                     {data: 'email'},
+                    {data: 'position_id'},
+                    {data: 'department_id'},
                     {data: 'created_at'},
                     {data: 'created_by'},
                     {data: 'actions', orderable: false, searchable: false}

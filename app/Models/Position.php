@@ -5,15 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Position extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name', 
-        'shortcut',
-        'created_by',
-        'isActive'
+        'name',
+        'created_by'
     ];
 
     public function creator()
@@ -23,6 +21,6 @@ class Department extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'id', 'department_id');
+        return $this->belongsToMany(User::class, 'id', 'position_id');
     }
 }

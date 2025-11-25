@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
+use App\Models\Position;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
-class DepartmentController extends Controller
+class PositionController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,25 +15,15 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        return view('users.department');
+        return view('users.position');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    public function getDepartmentsData()
+    public function getPositionData()
     {
         // eager load
-        $department = Department::with(['creator']);
+        $positions = Position::with(['creator']);
 
-        return DataTables::of($department)
+        return DataTables::of($positions)
             ->addIndexColumn()
             ->editColumn('created_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
@@ -47,6 +37,17 @@ class DepartmentController extends Controller
             ->rawColumns(['actions'])
             ->make(true);
     }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -57,25 +58,23 @@ class DepartmentController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'shortcut' => 'required'
         ]);
 
-        $result = Department::create([
+        $result = Position::create([
             'name' => $request->name, 
-            'shortcut' => $request->shortcut,
             'created_by' => auth()->user()->id,
         ]);
 
-        return redirect()->route('department.list');
+        return redirect()->route('position.list');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Position $position)
     {
         //
     }
@@ -83,10 +82,10 @@ class DepartmentController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\Models\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Position $position)
     {
         //
     }
@@ -95,10 +94,10 @@ class DepartmentController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\Models\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Position $position)
     {
         //
     }
@@ -106,10 +105,10 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\Models\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Position $position)
     {
         //
     }

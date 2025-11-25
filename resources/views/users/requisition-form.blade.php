@@ -55,6 +55,10 @@
     </style>
 @endpush
 
+@php
+    $counter = 0;    
+@endphp
+
 @section('content')
     <x-container>
         <div class="d-flex justify-content-center">
@@ -116,7 +120,8 @@
             </div>
         </div>
         <hr class="border border-2 border-black">
-        <form action="" class="my-5">
+        <form action="{{ route('requisition.form.add') }}" class="my-5">
+            @csrf
             <h2 class="text-center">PURCHASE REQUISITION FORM</h2>
             <div class="row mb-3">
                 <div class="col">
@@ -125,7 +130,7 @@
                         <input type="text" name="date_request" id="date_request" class="form-field__input">
                     </div> --}}
                     <div class="form-floating">
-                        <input type="date" name="date_request" id="date_request" class="form-control bg-white" placeholder="Date & Time requested">
+                        <input type="date" name="date_request" id="date_request" class="form-control bg-white" value="{{ now()->toDateString() }}" placeholder="Date & Time requested">
                         <label for="date_request">Date & Time requested</label>
                     </div>
                 </div>
@@ -135,71 +140,53 @@
                         <input type="text" name="date_needed" id="date_needed" class="form-field__input">
                     </div> --}}
                     <div class="form-floating">
-                        <input type="date" name="date_needed" id="date_needed" class="form-control bg-white" placeholder="Date Needed">
+                        <input type="date" name="date_needed" id="date_needed" class="form-control bg-white" value="{{ now()->toDateString() }}" placeholder="Date Needed">
                         <label for="date_needed">Date Needed</label>
                     </div>
                 </div>
                 <div class="col">
-                    {{-- <div class="form-group">
-                        <label for="status" class="form-field__label">Status</label>
-                        <input type="text" name="status" id="status" class="form-field__input">
-                    </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="status" id="status" class="form-control bg-white" placeholder="Status">
-                        <label for="status">Status</label>
+                        <select id="formStat" disabled="disabled" aria-required="true" aria-invalid="false" class="form-select">
+                            <option value="0">Pending</option>
+                            <option value="1">Approved</option>
+                            <option value="2">Rejected</option>
+                            <option value="3">Executed</option>
+                            <option value="4">Confirmed</option>
+                        </select>
+                        <label for="formStat">Status</label>
                     </div>
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col">
-                    {{-- <div class="form-group">
-                        <label for="full_name" class="form-field__label">Full Name</label>
-                        <input type="text" name="full_name" id="full_name" class="form-field__input">
-                    </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="full_name" id="full_name" class="form-control bg-white" placeholder="Full Name">
+                        <input type="text" name="full_name" id="full_name" class="form-control bg-white" placeholder="Full Name" value="{{ auth()->user()->name }}">
                         <label for="full_name">Full Name</label>
                     </div>
                 </div>
                 <div class="col">
-                    {{-- <div class="form-group">
-                        <label for="contact" class="form-field__label">Contact Num</label>
-                        <input type="text" name="contact" id="contact" class="form-field__input">
-                    </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="contact" id="contact" class="form-control bg-white" placeholder="Contact Num">
+                        <input type="text" name="contact" id="contact" class="form-control bg-white" placeholder="Contact Num" value="{{ auth()->user()->contact_no }}">
                         <label for="contact">Contact Num</label>
                     </div>
                 </div>
                 <div class="col">
-                    {{-- <div class="form-group">
-                        <label for="position" class="form-field__label">Position</label>
-                        <input type="text" name="position" id="position" class="form-field__input">
-                    </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="position" id="position" class="form-control bg-white" placeholder="Position">
+                        <input type="text" name="position" id="position" class="form-control bg-white" placeholder="Position" value="{{ auth()->user()->position_id }}">
                         <label for="position">Position</label>
                     </div>
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col">
-                    {{-- <div class="form-group">
-                        <label for="department" class="form-field__label">Department</label>
-                        <input type="text" name="department" id="department" class="form-field__input">
-                    </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="department" id="department" class="form-control bg-white" placeholder="Department">
+                        <input type="text" name="department" id="department" class="form-control bg-white" placeholder="Department" value="{{ auth()->user()->department_id }}">
                         <label for="department">Department</label>
                     </div>
                 </div>
                 <div class="col">
-                    {{-- <div class="form-group">
-                        <label for="branch" class="form-field__label">Branch</label>
-                        <input type="text" name="branch" id="branch" class="form-field__input">
-                    </div> --}}
                     <div class="form-floating">
-                        <input type="text" name="branch" id="branch" class="form-control bg-white" placeholder="Branch">
+                        <input type="text" name="branch" id="branch" class="form-control bg-white" placeholder="Branch" value="Head Office">
                         <label for="branch">Branch</label>
                     </div>
                 </div>
@@ -207,8 +194,11 @@
                     <div class="form-floating">
                         <select name="urgency" id="urgency" class="form-select bg-white">
                             <option value="" selected hidden>Select Level</option>
-                            <option value="test">test</option>
-                            <option value="test">test</option>
+                            <option value="Highest">Highest (1-2 Hours)</option>
+                            <option value="High">High (1-2 Days)</option>
+                            <option value="Medium">Medium (3-6 Days)</option>
+                            <option value="Low">Low (1-2 Weeks)</option>
+                            <option value="Lowest">Lowest (3-4 Weeks)</option>
                         </select>
                         <label for="urgency">Urgency</label>
                     </div>
@@ -218,54 +208,17 @@
             <x-section-head headTitle="Type of Request"></x-section-head>
 
             <div class="request-lists container my-3 d-flex flex-column flex-wrap gap-2 overflow-x-auto">
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type1" class="form-check-input rounded-0">
-                    <label for="request_type1" class="fs-5 ms-2">Office Supply</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type2" class="form-check-input rounded-0">
-                    <label for="request_type2" class="fs-5 ms-2">Safety Equipment</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type3" class="form-check-input rounded-0">
-                    <label for="request_type3" class="fs-5 ms-2">Marketing Collaterals</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type4" class="form-check-input rounded-0">
-                    <label for="request_type4" class="fs-5 ms-2">Store Dress Up</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type5" class="form-check-input rounded-0">
-                    <label for="request_type5" class="fs-5 ms-2">IT Equipment</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type6" class="form-check-input rounded-0">
-                    <label for="request_type6" class="fs-5 ms-2">Utility Supplies</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type7" class="form-check-input rounded-0">
-                    <label for="request_type7" class="fs-5 ms-2">Signage Request</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type8" class="form-check-input rounded-0">
-                    <label for="request_type8" class="fs-5 ms-2">Event & Sponsorship</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type9" class="form-check-input rounded-0">
-                    <label for="request_type9" class="fs-5 ms-2">Calling Card</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type10" class="form-check-input rounded-0">
-                    <label for="request_type10" class="fs-5 ms-2">Fixed Assets</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type11" class="form-check-input rounded-0">
-                    <label for="request_type11" class="fs-5 ms-2">Vechile Dress Up</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" name="request_type" id="request_type12" class="form-check-input rounded-0">
-                    <label for="request_type12" class="fs-5 ms-2">Reward Items</label>
-                </div>
+                @forelse ($requestTypes as $item)
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="request_type" id="request_type{{ $counter }}" class="form-check-input rounded-0 single-check" value="{{ $item->id }}">
+                        <label for="request_type{{ $counter }}" class="fs-5 ms-2">{{ $item->name }}</label>
+                    </div>
+                    @php
+                        $counter++;
+                    @endphp
+                @empty
+                    <p class="text-center">Error Fetching Request Types</p>
+                @endforelse
             </div>
 
             <div class="form-floating mb-3">
@@ -370,11 +323,39 @@
                         </div>
                     </div>
                 </div>
-                {{-- <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div> --}}
             </div>
         </div>
     </div>
 @endsection
+
+@push('js')
+    <script>
+        $(document).ready(function(){
+            $('.single-check').on('change', function() {
+                $('.single-check').not(this).prop('checked', false);
+
+                const selectedType = $(this).val();
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('request_id', selectedType);
+                $.ajax({
+                    url: "{{ route('requisition.other.details') }}",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log('res: ', res);
+                    }, error: function (xhr) {
+                        console.error('error: ', error);
+                    }
+                })
+            });
+
+            function fetchPRFDetails(type) {
+                
+            }
+        });
+    </script>
+@endpush
