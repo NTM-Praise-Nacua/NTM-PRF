@@ -1,6 +1,7 @@
 require("./bootstrap");
 
-import "bootstrap";
+import * as bootstrap from "bootstrap";
+window.bootstrap = bootstrap;
 
 const Swal = require("sweetalert2");
 window.Swal = Swal;

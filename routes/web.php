@@ -41,7 +41,11 @@ Route::group(['middleware' => 'auth'], function() {
     
     Route::get('/users', [UserController::class, 'index'])->name('user.list');
     Route::get('/users/data', [UserController::class, 'getUsersData'])->name('users.data');
+    Route::post('/user/detail', [UserController::class, 'getUserInfo'])->name('user.details.get');
     Route::post('/user/add', [UserController::class, 'store'])->name('user.add');
+    // Route::get('/user/{id}/edit', [UserController::class, 'edit'])->name('user.edit');
+    // Route::post('/user/view', [UserController::class, 'update'])->name('user.update');
+    Route::post('/user/update', [UserController::class, 'update'])->name('user.update');
     
     Route::get('/department', [DepartmentController::class, 'index'])->name('department.list');
     Route::get('/department/data', [DepartmentController::class, 'getDepartmentsData'])->name('department.data');

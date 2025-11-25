@@ -134,5 +134,19 @@
         </div>
     </div>
     @stack('js')
+    <script>
+        function alertMessage(msg, status) {
+            Swal.fire({
+                title: msg,
+                icon: status,
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer && status == "success") {
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
 </body>
 </html>

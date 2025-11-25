@@ -26,12 +26,13 @@ class UserController extends Controller
     public function getUsersData()
     {
         $users = User::with (['creator', 'position']);
-        return DataTables::of(User::query())
+        return DataTables::of($users)
             ->editColumn('created_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
             })
             ->addColumn('actions', function ($row) {
-                return '<a href="/users/'.$row->id.'/edit" class="btn btn-sm btn-primary">Edit</a>';
+                return '<a href="/user/'.$row->id.'/edit" class="btn btn-sm btn-primary edit-btn">Edit</a>
+                <a href="javascript:void(0);" data-id="'.$row->id.'" class="btn btn-sm btn-info edit-btn">View</a>';
             })
             ->editColumn('created_by', function ($row) {
                 return $row->creator->name;
@@ -44,6 +45,16 @@ class UserController extends Controller
             })
             ->rawColumns(['actions'])
             ->make(true);
+    }
+
+    public function getUserInfo(Request $request)
+    {
+        $user = User::find($request->id);
+
+        return json_encode([
+            'status' => 'success',
+            'data' => $user
+        ]);
     }
 
     /**
@@ -119,7 +130,9 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::find($id);
+        
+        return view('users.edit', compact('user'));
     }
 
     /**
@@ -129,9 +142,47 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $request->validate([
+            'userId' => 'required',
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required',
+            'contact' => 'required',
+            'position' => 'required',
+            'department' => 'required',
+            'oldpassword' => 'nullable|string',
+            'newpassword' => 'nullable|string',
+        ]);
+
+        $user = User::find((int)$request->userId);
+
+        if ($request->filled('oldpassword') && $request->filled('newpassword')) {
+            if (!Hash::check($request->oldpassword, $user->password)) {
+                return json_encode([
+                    'status' => 'error',
+                    'message' => 'Old Password Incorrect!'
+                ]);
+            } else {
+                $user->password = $request->newpassword;
+            }
+        }
+
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->name = $request->first_name . " " . $request->last_name;
+        $user->email = $request->email;
+        $user->contact_no = $request->contact;
+        $user->position_id = $request->position;
+        $user->department_id = $request->department;
+        $user->save();
+
+        return json_encode([
+            'status' => 'success',
+            'message' => 'User Details Updated!',
+            'data' => $user
+        ]);
     }
 
     /**
