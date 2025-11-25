@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
 use App\Models\PurchaseRequisitionForm;
 use App\Models\RequestType;
 use App\Models\UploadedFile;
@@ -24,9 +25,12 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function index()
     {
+        $departments = Department::where('isActive', 1)->get()->toArray();
         $requestTypes = $this->requestType->getRequestType();
 
-        return view('admin.approval', compact('requestTypes'));
+        // dd($departments);
+
+        return view('admin.approval', compact('requestTypes', 'departments'));
     }
 
     public function uploadPdf(Request $request)
@@ -89,7 +93,7 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        dd($request->all());
     }
 
     /**

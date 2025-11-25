@@ -317,8 +317,64 @@
 
             <div class="button-group float-end">
                 <button type="button" class="btn btn-sm btn-primary">Submit</button>
-                <button type="button" class="btn btn-sm btn-primary">Request Status</button>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#requestStatusModal">Request Status</button>
             </div>
         </form>
     </x-container>
+
+    <div class="modal fade" id="requestStatusModal" tabindex="-1" aria-labelledby="requestStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="requestStatusModalLabel">Request Status</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row px-3 pb-1 gap-2 fs-5">
+                        <div class="col rounded bg-secondary-subtle">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="checkStatus">
+                                <label class="form-check-label ps-2 fs-5" for="checkStatus">
+                                    Process 1 - Marketing
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <a href="javascript:void(0);">Attachment</a>
+                        </div>
+                    </div>
+                    <div class="row px-3 pb-1 gap-2 fs-5">
+                        <div class="col rounded bg-primary-subtle">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="checkStatus">
+                                <label class="form-check-label ps-2" for="checkStatus">
+                                    Process 2 - Sales
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <a href="javascript:void(0);">Attachment</a>
+                        </div>
+                    </div>
+                    <div class="row px-3 pb-1 gap-2 fs-5">
+                        <div class="col rounded bg-secondary-subtle">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="checkStatus">
+                                <label class="form-check-label ps-2 fs-5" for="checkStatus">
+                                    Process 3 - Marketing
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <a href="javascript:void(0);">Attachment</a>
+                        </div>
+                    </div>
+                </div>
+                {{-- <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div> --}}
+            </div>
+        </div>
+    </div>
 @endsection

@@ -70,29 +70,12 @@
     </style>
 @endpush
 
-@php
-    $departments = [
-        'IT',
-        'SCD',
-        'CMD',
-        'Accounting',
-        'Compliance',
-        'Audit',
-        'Procurement',
-        'CRA',
-        'Sales',
-        'HRD',
-        'Marketing',
-        'Execom'
-    ];
-@endphp
-
 @section('content')
     <x-container pageTitle="Approval Setup">
         <x-section-head headTitle="Approval Process"></x-section-head>
 
         <div class="row p-3 ">
-            <div class="col-3">
+            <div class="col-3 card-selector-wrapper">
                 <div class="card pt-3 px-2 pb-1 mb-3">
                     <h5 class="card-title">Request Type</h5>
                     <div class="card-body px-0">
@@ -119,7 +102,7 @@
                 </form> --}}
             </div>
             <div class="col">
-                <div class="flex-area d-flex flex-column flex-wrap border rounded overflow-x-auto p-4 inner-shadow" style="height: 350px; row-gap: 16px; column-gap: 16px; background:#f5f5f4;">
+                <div class="flex-area d-flex flex-column flex-wrap border rounded overflow-x-auto p-4 inner-shadow position-relative" style="height: 350px; row-gap: 16px; column-gap: 16px; background:#f5f5f4;">
                 </div>
             </div>
         </div>
@@ -163,29 +146,85 @@
                 .css('background-image','none');
                 
             const emptyOpt = $('<option></option>');
-            emptyOpt.text('Department');
-            emptyOpt.attr('hidden', true);
-            emptyOpt.attr('selected', true);
+            emptyOpt.text('Department')
+                .attr('hidden', true)
+                .attr('selected', true)
+                .attr('value', "");
             dropDown.append(emptyOpt);
 
             const departments = @json($departments);
+            console.log('departments: ', departments);
                 
             departments.forEach(el => {
                 const option = $('<option></option>');
-                option.val(el);
-                option.text(el);
+                option.val(el.shortcut);
+                option.text(el.shortcut);
                 dropDown.append(option);
             });
 
             const tagLabels = $('.tagLabel');
             circle.text(tagLabels.length + 1);
 
+            if ($('.card-selector-wrapper').find('.submit-ordering').length <= 0) {
+                const submitBtn = $('<button></button>');
+                submitBtn.attr('type', 'button');
+                submitBtn.addClass('submit-ordering btn btn-success float-end me-3 mb-3 shadow');
+                submitBtn.css({
+                    zIndex: 5
+                });
+                submitBtn.text('Save Ordering');
+                $('.card-selector-wrapper').append(submitBtn);
+            }
+
             dropdownWrapper.append(dropDown);
             circleWrapper.append(circle);
             divWrapper.append(circleWrapper, dropdownWrapper);
-            mainWrapper.append(divWrapper, close)
+            mainWrapper.append(divWrapper, close);
 
             $('.flex-area').append(mainWrapper);
+        });
+
+        $(document).on('click', '.submit-ordering', function() {
+            const requestType = $('select[name="request_type"]').val();
+            if (requestType == "") {
+                alertMessage('Choose Request Type', 'warning');
+            } else {
+                const tagLabel = $('.tagLabel select[name="department"]');
+                const emptyTag = tagLabel.filter(function() {
+                    return $(this).val() === ""
+                });
+
+                let ordering = [];
+
+                if (emptyTag.length > 0) {
+                    alertMessage('Please Select Department(s) in the workflow', 'warning');
+                } else {
+                    ordering = tagLabel
+                        .map(function() {
+                            return $(this).val();
+                        })
+                        .get();
+                }
+
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('requestType', requestType);
+                formData.append('ordering', ordering);
+                formData.append('_token', token)
+
+                $.ajax({
+                    url: '{{ route("requisition.form.add") }}',
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log("response: ", res);
+                    }, error: function (xhr) {
+                        console.error("error: ", xhr);
+                    }
+                });
+            }
         });
 
         function remove(el) {

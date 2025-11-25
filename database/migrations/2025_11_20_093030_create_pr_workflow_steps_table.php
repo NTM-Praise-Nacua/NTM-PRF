@@ -16,7 +16,7 @@ class CreatePrWorkflowStepsTable extends Migration
         Schema::create('pr_workflow_steps', function (Blueprint $table) {
             $table->id();
             $table->foreignId('type_id')->constrained('request_types', 'id');
-            $table->text('ordering');
+            $table->integer('ordering');
             $table->integer('created_by');
             $table->timestamps();
         });

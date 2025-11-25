@@ -19,6 +19,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'photo',
@@ -31,10 +33,18 @@ class User extends Authenticatable
         'long',
         'status',
         'is_blocked',
+        'contact_no',
+        'department_id',
+        'role_id',
+        'position_id',
+        'division_id',
+        'parent_user_id',
         'created_by',
         'default_profile_color',
-        'parent_user_id',
+        'resignation_date',
+        'deleted_at',
         'weak_password',
+        'location_status'
     ];
 
     /**
@@ -55,4 +65,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function departments()
+    {
+        return $this->hasMany(Department::class, 'created_by', 'id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function createdUsers()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

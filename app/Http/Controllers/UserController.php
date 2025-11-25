@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
@@ -13,12 +17,25 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view("users.list");
+        $departments = Department::where('isActive', 1)->get();
+        return view("users.list", compact('departments'));
     }
 
-    public function userDepartment()
+    public function getUsersData()
     {
-        return view('users.department');
+        $users = User::with (['creator']);
+        return DataTables::of(User::query())
+            ->editColumn('created_at', function ($row) {
+                return $row->created_at ? $row->created_at->format('M d, Y') : '';
+            })
+            ->addColumn('actions', function ($row) {
+                return '<a href="/users/'.$row->id.'/edit" class="btn btn-sm btn-primary">Edit</a>';
+            })
+            ->editColumn('created_by', function ($row) {
+                return $row->creator->name;
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     /**
@@ -39,7 +56,31 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'password' => 'required',
+            'department' => 'required'
+        ]);
+
+        $firstName = $request->first_name;
+        $lastName = $request->last_name;
+        $fullName = $firstName . " " . $lastName;
+        $email = $request->email;
+        $password = Hash::make($request->password);
+
+        $user = User::create([
+            'name' => $fullName,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $email,
+            'password' => $password,
+            'created_by' => auth()->user()->id,
+            'weak_password' => $request->password
+        ]);
+
+        return redirect()->route('user.list');
     }
 
     /**

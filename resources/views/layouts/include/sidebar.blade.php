@@ -7,7 +7,7 @@
 @php
     $activeDropdown = in_array(url()->current(), [
         route('user.list'),
-        route('user.department')
+        route('department.list')
     ]);
 @endphp
 
@@ -21,14 +21,14 @@
     </a>
 
     <div class="collapse p-2 rounded {{ $activeDropdown ? 'show' : '' }}" id="usersDropdown">
-        <ul class="nav flex-column">
+        <ul class="nav flex-column gap-2">
             <li class="nav-item ps-2 {{ url()->current() == route('user.list') ? 'active-current' : '' }}">
                 <a href="{{ route('user.list') }}" class="nav-link text-white">
                     Users
                 </a>
             </li>
-            <li class="nav-item ps-2 {{ url()->current() == route('user.department') ? 'active-current' : '' }}">
-                <a href="{{ route('user.department') }}" class="nav-link text-white">
+            <li class="nav-item ps-2 {{ url()->current() == route('department.list') ? 'active-current' : '' }}">
+                <a href="{{ route('department.list') }}" class="nav-link text-white">
                     Departments
                 </a>
             </li>
