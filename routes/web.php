@@ -40,7 +40,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/requisition/history', [PurchaseRequisitionFormController::class, 'showHistory'])->name('requisition.history');
     Route::get('/requisition/list', [PurchaseRequisitionFormController::class, 'showPRFList'])->name('requisition.list');
     Route::get('/requisition/{requisition}/edit', [PurchaseRequisitionFormController::class, 'edit'])->name('requisition.edit');
-    Route::get('/requisition/employee-department/{id}', [PurchaseRequisitionFormController::class, 'getEmployeeByDepartment'])->name('requisition.employee.department');
+    Route::post('/requisition/employee-department', [PurchaseRequisitionFormController::class, 'getEmployeeByDepartment'])->name('requisition.employee.department');
     Route::put('/requisition/{requisition}/update', [PurchaseRequisitionFormController::class, 'update'])->name('requisition.form.update');
     Route::post('/requisition/request/status', [PurchaseRequisitionFormController::class, 'getRequestStatus'])->name('requisition.request.status');
     

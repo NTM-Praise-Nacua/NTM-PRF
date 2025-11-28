@@ -117,7 +117,6 @@
     $counter = 0;
 
     $steps = [];
-
     foreach ($PRFWorkflow as $index => $item) {
         $trackerExists = isset($tracker[$index]);
         $rawSubmittedAt = $trackerExists ? $tracker[$index]['submitted_at'] : null;
@@ -145,9 +144,17 @@
         ];
     }
 
-    $nextDepartment = $PRFWorkflow[array_key_last($tracker) + 1]->toArray() ?? null;
+    
+    $nextIndex = array_key_last($tracker) + 1;
+    $nextDepartment = optional($PRFWorkflow->get($nextIndex))?->toArray();
+    
+    // dd($PRFWorkflow);
+    $nextDepId = $nextDepartment ? $nextDepartment['ordering'] : null;
 
-    $nextDepId = $nextDepartment['ordering'];
+    // dd($nextDepId);
+    // dd(auth()->user()->id,$requisition->request_by);
+    // $nextDepId = $nextDepartment?->ordering;
+    // dd($nextDepId);
 @endphp
 
 @section('content')
@@ -166,7 +173,7 @@
                         </div>
 
                         {{-- Step info --}}
-                        <div class="ms-2">
+                        <div>
                             <div class="fw-bold">{{ $step['name'] }}</div>
                             <small class="text-muted">{{ $step['date'] }}</small>
                         </div>
@@ -344,16 +351,16 @@
             <div class="mb-3">
                 <label class="inline-block fs-5 fw-bold">Attachment(s)</label>
                 <div class="attachment-list p-1 d-flex flex-column flex-wrap gap-2">
-                    @if ($attachments)
+                    @forelse ($attachments as $attachment)
                         <div>
-                            <a href="{{ asset('storage/'. $attachments->path) }}" download>{{ $attachments->original_name }}</a>
+                            <a href="{{ asset('storage/'. $attachment->path) }}" download>{{ $attachment->original_name }}</a>
                         </div>
-                    @else
+                    @empty
                         No attachments...
-                    @endif
+                    @endforelse
                 </div>
             </div>
-            <div class="upload-pdf-group row mb-3">
+            <div class="upload-pdf-group row mb-3 {{ (is_null($nextDepId) || auth()->id() == $requisition->request_by) ? 'd-none' : '' }}">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
                     <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" multiple>
@@ -368,11 +375,11 @@
                         <div class="col d-flex align-items-center">
                             <p class="m-0 fs-5 fw-bold">Accountable Department</p>
                         </div>
-                        <input type="hidden" name="department_id" value="{{ $nextDepId }}">
+                        <input type="hidden" name="department_id" value="{{ $nextDepId }}" {{ $nextDepId ?? 'disabled' }}>
                         <select name="next_department" id="next_department" class="form-select form-select-sm w-75 bg-white @error('next_department') is-invalid @enderror" disabled>
                             <option value="" {{ $nextDepartment == null ? 'selected' : '' }} hidden>Select Department</option>
                             @forelse ($departments as $item)
-                                <option value="{{ $item->id }}" {{ $nextDepId == $item->id ? 'selected' : '' }}>{{ $item->shortcut }}</option>
+                                <option value="{{ $item->id }}" {{ (($nextDepId ?? $requisition->department) == $item->id) ? 'selected' : '' }}>{{ $item->shortcut }}</option>
                             @empty
                                 <option value="">No Request Types Found</option>
                             @endforelse
@@ -387,7 +394,7 @@
                         <div class="col d-flex align-items-center">
                             <p class="m-0 fs-5 fw-bold">Select Employee</p>
                         </div>
-                        <select name="assign_employee" id="assign_employee" class="form-select form-select-sm w-75 bg-white @error('assign_employee') is-invalid @enderror">
+                        <select name="assign_employee" id="assign_employee" class="form-select form-select-sm w-75 bg-white @error('assign_employee') is-invalid @enderror" {{ $nextDepId ?? 'disabled' }}>
                             <option value="" selected hidden>Select Employee</option>
                         </select>
                         <div class="invalid-feedback d-block">
@@ -409,7 +416,7 @@
             <hr>
 
             <div class="button-group float-end">
-                <button type="submit" class="btn btn-sm btn-primary">Submit</button>
+                <button type="submit" class="btn btn-sm btn-primary" {{ (is_null($nextDepId) || auth()->id() == $requisition->request_by) ? 'disabled' : '' }}>Submit</button>
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
             </div>
         </form>
@@ -437,9 +444,16 @@
             getEmployees();
 
             function getEmployees() {
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('department_id', {{ $nextDepId ?? $requisition->department }});
+                formData.append('requestor_id', {{ $requisition->request_by }});
+
                 $.ajax({
-                    url: "{{ route('requisition.employee.department', $nextDepId) }}",
-                    type: 'GET',
+                    url: "{{ route('requisition.employee.department') }}",
+                    type: 'POST',
+                    data: formData,
                     processData: false,
                     contentType: false,
                     success: function (response) {
@@ -486,6 +500,7 @@
                     success: function (response) {
                         const res = JSON.parse(response);
 
+                        console.log('response: ', res);
                         createRequestStatusElements(res.data.departments, res.data.files);
 
                         const modalEl = document.getElementById('requestStatusModal');
@@ -528,14 +543,19 @@
                         class: `accordion-body ${!files[index] ? "fst-italic" : "fs-6"}`
                     });
                     
-                    const link = $('<a></a>', {
-                        href: `{{ asset('storage') }}/${files[index]?.path}`,
-                        download: files[index]?.original_name,
-                        text: files[index]?.original_name,
-                        class: 'attachment-item d-block'
-                    });
+                    if (files[index]) {
+                        files[index]?.forEach((file) => {
+                            const link = $('<a></a>', {
+                                href: `{{ asset('storage') }}/${file.path}`,
+                                download: file.original_name,
+                                text: file.original_name,
+                                class: 'attachment-item d-block'
+                            });
+                            bodyEl.append(link);
+                        })
+                    }
 
-                    bodyWrapper.append(bodyEl.append(link));
+                    bodyWrapper.append(bodyEl);
 
                     wrapper.append(itemEl.append(textHeadEl, bodyWrapper));
                 });

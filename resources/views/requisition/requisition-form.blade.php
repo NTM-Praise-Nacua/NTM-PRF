@@ -377,12 +377,21 @@
 
             <div class="button-group float-end">
                 <button type="submit" class="btn btn-sm btn-primary">Submit</button>
-                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#requestStatusModal">Request Status</button>
+                {{-- <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#requestStatusModal">Request Status</button> --}}
             </div>
         </form>
     </x-container>
 
-    <div class="modal fade" id="requestStatusModal" tabindex="-1" aria-labelledby="requestStatusModalLabel" aria-hidden="true">
+    {{-- @if ($errors->any())
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li class="text-danger">{{ $error }}</li>
+            @endforeach
+        </ul>
+        
+    @endif --}}
+
+    {{-- <div class="modal fade" id="requestStatusModal" tabindex="-1" aria-labelledby="requestStatusModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -432,7 +441,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 @endsection
 
 @push('js')
@@ -458,6 +467,7 @@
                 const formData = new FormData();
                 formData.append('_token', token);
                 formData.append('request_id', type);
+                formData.append('requestor_id', {{ auth()->user()->id }});
                 $.ajax({
                     url: "{{ route('requisition.other.details') }}",
                     type: 'POST',

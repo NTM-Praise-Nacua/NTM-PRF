@@ -49,7 +49,8 @@ class PurchaseRequisitionFormController extends Controller
             'request_type' => 'required|string',
         ]);
 
-        $requestType = RequestType::where('slug', $request->request_type)->first();
+        $requestType = RequestType::where('id', $request->request_type)->first();
+        // dd($requestType, $request->request_type);
         $requestId = $requestType->id;
 
         $file = $request->file('file');
@@ -140,7 +141,8 @@ class PurchaseRequisitionFormController extends Controller
         
         $ordering = $PRFWorkflow['ordering'] ?? null;
         
-        $employees = $ordering ? User::where('department_id', $PRFWorkflow['ordering'])->get() : collect();
+        // dd($PRFWorkflow,$request->request_id);
+        $employees = $ordering ? User::where('department_id', $PRFWorkflow['ordering'])->where('id', '!=', (int)$request->requestor_id)->get() : collect();
 
         $files = UploadedFile::where('request_type_id', $request->request_id)->get();
 
@@ -162,11 +164,28 @@ class PurchaseRequisitionFormController extends Controller
 
     public function showPRFList()
     {
-        if (auth()->user()->role_id == 1) {
-            $prfData = PurchaseRequisitionForm::with(['requestType', 'positionName', 'departmentName', 'assignedEmployee']);
-        } else {
-            $prfData = PurchaseRequisitionForm::with(['requestType', 'positionName', 'departmentName', 'assignedEmployee'])->where('request_by', auth()->user()->id)->orWhere('assign_employee', auth()->user()->id);
+        $prfData = PurchaseRequisitionForm::with([
+            'requestType',
+            'positionName',
+            'departmentName',
+            'assignedEmployee',
+            'tracker' => function ($query) {
+                $query->orderBy('created_at', 'desc')->limit(1);
+            }
+        ])->orderBy('created_at','desc');
+
+        if (auth()->user()->role_id != 1) {
+            $userId = auth()->user()->id;
+            $prfData->where(function ($query) use ($userId) {
+                $query->where('request_by', $userId)
+                    ->orWhere('assign_employee', $userId);
+            });
         }
+
+        // $prfData = $prfData->get()->map(function ($prf) {
+        //     $prf->latest_tracker = $prf->tracker->last();
+        //     return $prf;
+        // });
 
         return DataTables::of($prfData)
             ->addIndexColumn()
@@ -210,15 +229,15 @@ class PurchaseRequisitionFormController extends Controller
                 return $row->assignedEmployee->name;
             })
             ->addColumn('actions', function ($row) {
-                return '<a href="'.route('requisition.edit', $row->id).'" class="btn btn-sm btn-primary">View</a>';
+                return '<a href="'.route('requisition.edit', $row->id).'" class="btn btn-sm btn-info">View</a>';
             })
             ->rawColumns(['actions'])
             ->make(true);
     }
 
-    public function getEmployeeByDepartment($id)
+    public function getEmployeeByDepartment(Request $request)
     {
-        $users = User::where('department_id', $id)->get();
+        $users = User::where('department_id', $request->department_id)->where('id', '!=', $request->requestor_id)->get();
         
         return json_encode([
             'status' => 'success',
@@ -317,7 +336,7 @@ class PurchaseRequisitionFormController extends Controller
         $requestTypes = RequestType::all();
         $departments = Department::where('isActive', 1)->get();
 
-        $attachments = $requisition->attachmentsByPRF()->where('uploaded_by', $requisition->request_by)->get()->first();
+        $attachments = $requisition->attachmentsByPRF()->where('uploaded_by', $requisition->request_by)->get();
 
         $PRFWorkflow = $requisition->workflowSteps;
         $tracker = $requisition->tracker()->orderBy('id', 'asc')->get()->toArray();
@@ -334,38 +353,68 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function update(Request $request, PurchaseRequisitionForm $requisition)
     {
-        $request->validate([
-            'assign_employee' => 'required',
-            'department_id' => 'required',
-            'upload_pdf' => 'required|array',
-            'upload_pdf.*' => 'file|mimes:pdf',
-        ]);
-        
-        $latestTracker = $requisition->tracker()->latest()->first();
+        // dd($request->all(), $requisition);
+        if (!$request->exists('assign_employee') && !$request->exists('department_id')) {
+            $request->validate([
+                'upload_pdf' => 'required|array',
+                'upload_pdf.*' => 'file|mimes:pdf',
+            ]);
 
-        if ($latestTracker) {
-            $latestTracker->submitted_at = now();
-            $latestTracker->save();
+            $latestTracker = $requisition->tracker()->latest()->first();
+    
+            if ($latestTracker) {
+                $latestTracker->submitted_at = now();
+                $latestTracker->save();
+            }
+    
+            $requisition->status = 1;
+            $requisition->next_department = $requisition->department;
+            $requisition->assign_employee = $requisition->request_by;
+            $requisition->save();
+            
+            $uploadedFileIds = collect($request->file('upload_pdf'))
+                ->map(function ($file) {
+                    return $this->uploadFile($file)->id;
+                })
+                ->toArray();
+            
+            $requisition->files()->attach($uploadedFileIds);
+        } else {
+            $request->validate([
+                'assign_employee' => 'required',
+                'department_id' => 'required',
+                'upload_pdf' => 'required|array',
+                'upload_pdf.*' => 'file|mimes:pdf',
+            ]);
+
+            $latestTracker = $requisition->tracker()->latest()->first();
+    
+            if ($latestTracker) {
+                $latestTracker->submitted_at = now();
+                $latestTracker->save();
+            }
+    
+            $requisition->next_department = $request->department_id;
+            $requisition->assign_employee = $request->assign_employee;
+            $requisition->save();
+            
+            $uploadedFileIds = collect($request->file('upload_pdf'))
+                ->map(function ($file) {
+                    return $this->uploadFile($file)->id;
+                })
+                ->toArray();
+            
+            $requisition->files()->attach($uploadedFileIds);
+            
+            RequisitionWorkflowTracker::create([
+                'requisition_id' => $requisition->id,
+                'department_id' => $request->department_id,
+                'employee_id' => $requisition->assign_employee,
+            ]);
         }
-
-        $requisition->next_department = $request->department_id;
-        $requisition->assign_employee = $request->assign_employee;
-        $requisition->save();
         
-        $uploadedFileIds = collect($request->file('upload_pdf'))
-            ->map(function ($file) {
-                return $this->uploadFile($file)->id;
-            })
-            ->toArray();
         
-        $requisition->files()->attach($uploadedFileIds);
-        
-        RequisitionWorkflowTracker::create([
-            'requisition_id' => $requisition->id,
-            'department_id' => $request->department_id,
-            'employee_id' => $requisition->assign_employee,
-        ]);
-        
+        return redirect()->route("requisition.history");
     }
 
     public function getRequestStatus(Request $request)
@@ -381,19 +430,34 @@ class PurchaseRequisitionFormController extends Controller
         $departments = array_merge($requestorDepartment, $workflowDepartments);
 
         $files = $requisition->files->toArray();
-        // if ($flow && $flow->department) {
-        //     $departmentNames = $flow->department->name;
-        //     dd('departmentNames: ', $departmentNames);
-        // }
+        
+        $grouped = [];
+        $currentGroup = [];
+        $previousUploader = null;
+
+        foreach ($files as $file) {
+            if ($file['uploaded_by'] !== $previousUploader) {
+                if (!empty($currentGroup)) {
+                    $grouped[] = $currentGroup;
+                }
+                $currentGroup = [$file];
+                $previousUploader = $file['uploaded_by'];
+            } else {
+                $currentGroup[] = $file;
+            }
+        }
+
+        if (!empty($currentGroup)) {
+            $grouped[] = $currentGroup;
+        }
+
         $return = [            
             'status' => 'success',
             'data' => [
                 'departments' => $departments,
-                'files' => $files,
+                'files' => $grouped,
             ]
         ];
-
-        // dd($return);
 
         return json_encode($return);
     }
