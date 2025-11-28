@@ -42,11 +42,11 @@
     </div>
     @endif
 
-    <a href="{{ route('requisition.form') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.form') ? 'active-current' : '' }}">
+    <a href="{{ route('requisition.history') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.history') ? 'active-current' : '' }}">
         Purchase Requisition
     </a>
-    <a href="{{ route('requisition.history') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.history') ? 'active-current' : '' }}">
+    {{-- <a href="{{ route('requisition.history') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.history') ? 'active-current' : '' }}">
         PRF History
-    </a>
+    </a> --}}
 </div>
 

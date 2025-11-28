@@ -18,4 +18,9 @@ class RequestType extends Model
     {
         return $this->hasOne(PRWorkFlowSteps::class, 'type_id', 'id');
     }
+
+    public function requestType()
+    {
+        return $this->hasMany(PurchaseRequisitionForm::class, 'request_type', 'id');
+    }
 }

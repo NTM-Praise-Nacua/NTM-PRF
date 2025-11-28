@@ -88,11 +88,16 @@ class User extends Authenticatable
 
     public function position()
     {
-        return $this->hasOne(Position::class, 'id', 'position_id');
+        return $this->belongsTo(Position::class, 'position_id');
     }
 
     public function department()
     {
         return $this->hasOne(Department::class, 'id', 'department_id');
+    }
+
+    public function requestBy()
+    {
+        return $this->hasMany(PurchaseRequisitionForm::class, 'request_by', 'id');
     }
 }

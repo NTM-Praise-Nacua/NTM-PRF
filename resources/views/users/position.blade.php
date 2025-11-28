@@ -2,7 +2,7 @@
 
 @section('content')
     <x-container pageTitle=" Position List">
-        <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addPositionModal">+ Add</button>
+        <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addPositionModal">+ Add</button>
 
         <div class="">
             <table id="positions-table" class="table table-hover">
@@ -55,6 +55,9 @@
             $('#positions-table').DataTable({
                 processing: true,
                 serverSide: true,
+                dom: 'Bfrtip',
+                buttons: ['colvis'],
+				scrollX: true,
                 ajax: "{{ route('position.data') }}",
                 columns: [
                     {data: 'DT_RowIndex', orderable: false, searchable: false},

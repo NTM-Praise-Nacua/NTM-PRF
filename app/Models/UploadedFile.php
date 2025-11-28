@@ -18,4 +18,14 @@ class UploadedFile extends Model
         'type',
         'request_type_id'
     ];
+
+    public function prfs()
+    {
+        return $this->belongsToMany(
+            PurchaseRequisitionForm::class,
+            'request_files',
+            'file_id',
+            'prf_id'
+        )->withTimestamps();
+    }
 }

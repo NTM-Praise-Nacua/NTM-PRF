@@ -23,4 +23,9 @@ class Position extends Model
     {
         return $this->belongsToMany(User::class, 'id', 'position_id');
     }
+
+    public function position()
+    {
+        return $this->hasMany(PurchaseRequisitionForm::class, 'position');
+    }
 }

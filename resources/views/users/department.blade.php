@@ -51,6 +51,9 @@
             $('#department-table').DataTable({
                 processing: true,
                 serverSide: true,
+                dom: 'Bfrtip',
+                buttons: ['colvis'],
+				scrollX: true,
                 ajax: "{{ route('department.data') }}",
                 columns: [
                     {data: 'DT_RowIndex', orderable: false, searchable: false},

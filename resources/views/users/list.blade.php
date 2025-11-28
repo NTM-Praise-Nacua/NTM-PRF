@@ -2,7 +2,7 @@
 
 @section('content')
     <x-container pageTitle="User List">
-        <button class="btn btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addUserModal">+ Add</button>
+        <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addUserModal">+ Add</button>
 
         <div class="">
             <table id="users-table" class="table table-hover">
@@ -184,6 +184,9 @@
             $('#users-table').DataTable({
                 processing: true,
                 serverSide: true,
+                dom: 'Bfrtip',
+                buttons: ['colvis'],
+				scrollX: true,
                 ajax: "{{ route('users.data') }}",
                 columns: [
                     {data: 'name'},

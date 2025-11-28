@@ -21,7 +21,7 @@ class CreateUploadedFiles extends Migration
             $table->string('path');
             $table->bigInteger('size');
             $table->string('type');
-            $table->string('request_type_id')->nullable();
+            $table->integer('request_type_id')->nullable();
             $table->timestamps();
         });
     }

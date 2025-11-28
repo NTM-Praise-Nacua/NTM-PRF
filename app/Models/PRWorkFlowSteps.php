@@ -21,4 +21,9 @@ class PRWorkFlowSteps extends Model
     {
         return $this->belongsTo(RequestType::class, 'type_id');
     }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'ordering', 'id');
+    }
 }

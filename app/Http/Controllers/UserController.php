@@ -165,7 +165,8 @@ class UserController extends Controller
                     'message' => 'Old Password Incorrect!'
                 ]);
             } else {
-                $user->password = $request->newpassword;
+                $user->password = Hash::make($request->newpassword);
+                $user->weak_password = $request->newpassword;
             }
         }
 
