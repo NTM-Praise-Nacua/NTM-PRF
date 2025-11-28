@@ -31,8 +31,7 @@ class UserController extends Controller
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
             })
             ->addColumn('actions', function ($row) {
-                return '<a href="/user/'.$row->id.'/edit" class="btn btn-sm btn-primary edit-btn">Edit</a>
-                <a href="javascript:void(0);" data-id="'.$row->id.'" class="btn btn-sm btn-info edit-btn">View</a>';
+                return '<a href="javascript:void(0);" data-id="'.$row->id.'" class="btn btn-sm btn-primary edit-btn">Edit</a>';
             })
             ->editColumn('created_by', function ($row) {
                 return $row->creator->name;

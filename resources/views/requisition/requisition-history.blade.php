@@ -8,10 +8,6 @@
         .highlight-green td {
             background: #C1F5C1 !important;
         }
-        table th {
-            background: #212529 !important;
-            color: white !important;
-        }
     </style>
 @endpush
 

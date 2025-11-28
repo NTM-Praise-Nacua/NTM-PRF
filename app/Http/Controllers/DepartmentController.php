@@ -39,13 +39,23 @@ class DepartmentController extends Controller
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
             })
             ->addColumn('actions', function ($row) {
-                return '<a href="/users/'.$row->id.'/edit" class="btn btn-sm btn-primary">Edit</a>';
+                return '<a href="javascript:void(0);" data-id="'.$row->id.'" class="btn btn-sm btn-primary edit-btn">Edit</a>';
             })
             ->editColumn('created_by', function ($row) {
                 return $row->creator->name;
             })
             ->rawColumns(['actions'])
             ->make(true);
+    }
+
+    public function getDepartmentInfo(Request $request)
+    {
+        $department = Department::find($request->id);
+
+        return json_encode([
+            'status' => 'success',
+            'data' => $department
+        ]);
     }
     /**
      * Store a newly created resource in storage.
@@ -98,9 +108,25 @@ class DepartmentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $request->validate([
+            'departmentId' => 'required',
+            'name' => 'required',
+            'shortcut' => 'required',
+        ]);
+
+        $department = Department::find($request->departmentId);
+
+        $department->name = $request->name;
+        $department->shortcut = $request->shortcut;
+        $department->save();
+
+        return json_encode([
+            'status' => 'success',
+            'message' => 'Department Details Updated!',
+            'data' => $department
+        ]);
     }
 
     /**

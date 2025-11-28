@@ -54,7 +54,9 @@ Route::group(['middleware' => 'auth'], function() {
     
     Route::get('/department', [DepartmentController::class, 'index'])->name('department.list');
     Route::get('/department/data', [DepartmentController::class, 'getDepartmentsData'])->name('department.data');
+    Route::post('/department/detail', [DepartmentController::class, 'getDepartmentInfo'])->name('department.details.get');
     Route::post('/department/add', [DepartmentController::class, 'store'])->name('department.add');
+    Route::post('/department/update', [DepartmentController::class, 'update'])->name('department.update');
 
     Route::get('/position', [PositionController::class, 'index'])->name('position.list');
     Route::get('/position/data', [PositionController::class, 'getPositionData'])->name('position.data');

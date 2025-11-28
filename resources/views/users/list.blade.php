@@ -2,24 +2,24 @@
 
 @section('content')
     <x-container pageTitle="User List">
-        <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addUserModal">+ Add</button>
+        <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
 
         <div class="">
-            <table id="users-table" class="table table-hover">
+            <table id="users-table" class="table table-hover table-striped">
                 <thead>
                     <tr>
-                        <td>Name</td>
-                        <td>Email</td>
-                        <td>Position</td>
-                        <td>Department</td>
-                        <td>Date Registered</td>
-                        <td>Created by</td>
-                        <td>Actions</td>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Position</th>
+                        <th>Department</th>
+                        <th>Date Registered</th>
+                        <th>Created by</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="4">No data.</td>
+                        <td colspan="7">No data.</td>
                     </tr>
                 </tbody>
             </table>
@@ -201,7 +201,6 @@
 
             $(document).on('click', '.edit-btn', function() {
                 const id = $(this).data('id');
-                console.log('id: ', id);
                 fetchUserData(id);
             });
 

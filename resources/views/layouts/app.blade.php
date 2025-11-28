@@ -59,6 +59,10 @@
         .active-current:hover, {
             color: lightgray !important;
         }
+        table th {
+            background: #212529 !important;
+            color: white !important;
+        }
     </style>
 
     @stack('css')
