@@ -13,7 +13,9 @@
 
 @section('content')
     <x-container pageTitle="PRF History">
-        <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end">Add Request</a>
+        @if (auth()->user()->id != 1)
+            <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end">Add Request</a>
+        @endif
 
         <div class="">
             <table id="prf-table" class="table table-striped table-hover no-wrap">
