@@ -29,7 +29,7 @@ class PositionController extends Controller
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
             })
             ->addColumn('actions', function ($row) {
-                return '<a href="/users/'.$row->id.'/edit" class="btn btn-sm btn-primary">Edit</a>';
+                return '<a href="javascript:void(0);" data-id="'.$row->id.'" class="btn btn-sm btn-primary edit-btn">Edit</a>';
             })
             ->editColumn('created_by', function ($row) {
                 return $row->creator->name;
@@ -68,6 +68,16 @@ class PositionController extends Controller
         return redirect()->route('position.list');
     }
 
+    public function getPositionInfo(Request $request)
+    {
+        $position = Position::find($request->id);
+
+        return json_encode([
+            'status' => 'success',
+            'data' => $position
+        ]);
+    }
+
     /**
      * Display the specified resource.
      *
@@ -97,9 +107,23 @@ class PositionController extends Controller
      * @param  \App\Models\Position  $position
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Position $position)
+    public function update(Request $request)
     {
-        //
+        $request->validate([
+            'positionId' => 'required',
+            'name' => 'required'
+        ]);
+
+        $position = Position::find($request->positionId);
+
+        $position->name = $request->name;
+        $position->save();
+
+        return json_encode([
+            'status' => 'success',
+            'message' => 'Position Details Updated!',
+            'data' => $position
+        ]);
     }
 
     /**

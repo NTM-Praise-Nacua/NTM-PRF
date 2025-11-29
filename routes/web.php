@@ -57,10 +57,12 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/department/detail', [DepartmentController::class, 'getDepartmentInfo'])->name('department.details.get');
     Route::post('/department/add', [DepartmentController::class, 'store'])->name('department.add');
     Route::post('/department/update', [DepartmentController::class, 'update'])->name('department.update');
-
+    
     Route::get('/position', [PositionController::class, 'index'])->name('position.list');
     Route::get('/position/data', [PositionController::class, 'getPositionData'])->name('position.data');
+    Route::post('/position/detail', [PositionController::class, 'getPositionInfo'])->name('position.details.get');
     Route::post('/position/add', [PositionController::class, 'store'])->name('position.add');
+    Route::post('/position/update', [PositionController::class, 'update'])->name('position.update');
 
     Route::post('/request/add', [RequestTypeController::class, 'store'])->name('add.request.type');
 });

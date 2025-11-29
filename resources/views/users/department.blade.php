@@ -58,7 +58,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="edit-department" action="{{ route('department.add') }}" method="POST">
+                <form id="edit-department" method="POST">
                     @csrf
                     <input type="hidden" name="departmentId">
                     <div class="form-floating mb-3">
@@ -69,7 +69,7 @@
                         <input type="text" class="form-control bg-white" name="shortcut" id="shortcut" placeholder="Shortcut">
                         <label for="shortcut">Shortcut Name (ex. "HR")</label>
                     </div>
-                    <button class="btn btn-primary">Add</button>
+                    <button class="btn btn-primary">Save Changes</button>
                 </form>
             </div>
         </div>
