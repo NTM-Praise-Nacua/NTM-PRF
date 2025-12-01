@@ -353,7 +353,7 @@
                 <label class="inline-block fs-5 fw-bold">Attachment(s)</label>
                 <div class="d-flex">
                     <div class="col-3">
-                        <div class="attachment-list p-1">
+                        <div class="attachment-list p-1d-flex flex-column flex-wrap gap-2" style="max-height: 100px">
                             @forelse ($attachments as $attachment)
                                 <div>
                                     <a href="javascript:void(0);" data-src="{{ asset('storage/'. $attachment->path) }}">{{ $attachment->original_name }}</a>
@@ -438,13 +438,19 @@
                 <div class="modal-body">
                     <div class="accordion" id="requestStatusContainer">
                     </div>
-                    {{-- <div class="d-flex">
-                        <div class="col">
-                        </div>
-                        <div class="col viewPDFModal">
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        </div>
-                    </div> --}}
+    <div class="modal fade" id="requestorViewAttach" tabindex="-1" aria-labelledby="requestorViewAttachLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="requestorViewAttachLabel"></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
                 </div>
             </div>
         </div>
@@ -582,7 +588,16 @@
 
             $('.attachment-list a').on('click', function(e) {
                 const linkEl = e.currentTarget;
-                viewPDF(linkEl, $('.viewPDF'));
+                const linkName = linkEl.innerText;
+                const modalLabel = $('#requestorViewAttachLabel');
+                const modalViewAttach = $('#requestorViewAttach .modal-body');
+                modalLabel.text(linkName);
+
+                const modalEl = document.getElementById('requestorViewAttach');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+
+                viewPDF(linkEl, modalViewAttach, '800px');
             });
             
             function viewPDFModal(linkEl) {

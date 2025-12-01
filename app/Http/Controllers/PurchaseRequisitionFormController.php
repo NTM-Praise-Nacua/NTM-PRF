@@ -91,8 +91,10 @@ class PurchaseRequisitionFormController extends Controller
     {
         $requestTypes = RequestType::all();
         $departments = Department::where('isActive', 1)->get();
+        $user_info = User::with('approver')->find(auth()->user()->id);
+        $approver = $user_info->approver;
 
-        return view('requisition.requisition-form', compact('requestTypes', 'departments'));
+        return view('requisition.requisition-form', compact('requestTypes', 'departments', 'approver'));
     }
 
     public function savePRF(StorePRFRequest $request)

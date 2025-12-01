@@ -370,7 +370,7 @@
 
             <h6 class="my-3">LIST OF APPROVERS</h6>
             <div class="d-flex flex-wrap">
-                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">Test Test</div>
+                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">{{ $approver->name }}</div>
             </div>
 
             <hr>
@@ -382,66 +382,18 @@
         </form>
     </x-container>
 
-    {{-- @if ($errors->any())
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li class="text-danger">{{ $error }}</li>
-            @endforeach
-        </ul>
-        
-    @endif --}}
-
-    {{-- <div class="modal fade" id="requestStatusModal" tabindex="-1" aria-labelledby="requestStatusModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade" id="requestorViewAttach" tabindex="-1" aria-labelledby="requestorViewAttachLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="requestStatusModalLabel">Request Status</h1>
+                    <h1 class="modal-title fs-5" id="requestorViewAttachLabel"></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row px-3 pb-1 gap-2 fs-5">
-                        <div class="col rounded bg-secondary-subtle">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="checkStatus">
-                                <label class="form-check-label ps-2 fs-5" for="checkStatus">
-                                    Process 1 - Marketing
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <a href="javascript:void(0);">Attachment</a>
-                        </div>
-                    </div>
-                    <div class="row px-3 pb-1 gap-2 fs-5">
-                        <div class="col rounded bg-primary-subtle">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="checkStatus">
-                                <label class="form-check-label ps-2" for="checkStatus">
-                                    Process 2 - Sales
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <a href="javascript:void(0);">Attachment</a>
-                        </div>
-                    </div>
-                    <div class="row px-3 pb-1 gap-2 fs-5">
-                        <div class="col rounded bg-secondary-subtle">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="checkStatus">
-                                <label class="form-check-label ps-2 fs-5" for="checkStatus">
-                                    Process 3 - Marketing
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <a href="javascript:void(0);">Attachment</a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
-    </div> --}}
+    </div>
 @endsection
 
 @push('js')
@@ -522,10 +474,11 @@
                 
                 files.forEach(file => {
                     const link = $('<a></a>', {
-                        href: `{{ asset('storage') }}/${file.path}`,
-                        download: file.original_name,
+                        href: "javascript:void(0);",
+                        'data-src': `{{ asset('storage') }}/${file.path}`,
                         text: file.original_name,
-                        class: 'attachment-item'
+                        class: 'attachment-item',
+                        click: (e) => viewPDFModal(e.currentTarget)
                     });
 
                     attachList.append(link);
@@ -568,6 +521,20 @@
                     headerFlow.append(divWrapper);
                 });
 
+            }
+
+            function viewPDFModal(linkEl) {
+                const linkName = linkEl.innerText;
+
+                const modalLabel = $('#requestorViewAttachLabel');
+                const modalViewAttach = $('#requestorViewAttach .modal-body');
+                modalLabel.text(linkName);
+
+                const modalEl = document.getElementById('requestorViewAttach');
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+
+                viewPDF(linkEl, modalViewAttach, '800px');
             }
         });
     </script>
