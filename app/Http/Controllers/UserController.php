@@ -22,7 +22,8 @@ class UserController extends Controller
         $departments = Department::where('isActive', 1)->get();
         $positions = Position::all();
         $roles = Role::where('is_active', 1)->get();
-        return view("users.list", compact('departments', 'positions','roles'));
+        $approvers = collect();
+        return view("users.list", compact('departments', 'positions','roles', 'approvers'));
     }
 
     public function getUsersData()
@@ -54,11 +55,21 @@ class UserController extends Controller
     public function getUserInfo(Request $request)
     {
         $user = User::find($request->id);
+        $departmentTeam = $this->getUsersByDepartment($user->department_id);
 
         return json_encode([
             'status' => 'success',
-            'data' => $user
+            'data' => $user,
+            'departmentTeam' => $departmentTeam
         ]);
+    }
+
+    public function getUsersByDepartment($id)
+    {
+        $users = User::where('department_id', $id)
+            ->get();
+
+        return $users;
     }
 
     /**
@@ -87,6 +98,7 @@ class UserController extends Controller
             'department' => 'required',
             'position' => 'required',
             'role' => 'required',
+            'approver' => 'required',
         ]);
 
         $firstName = $request->first_name;
@@ -97,6 +109,7 @@ class UserController extends Controller
         $position = $request->position;
         $department = $request->department;
         $role = $request->role;
+        $approver = $request->approver;
         
         $email = $request->email;
         $password = Hash::make($request->password);
@@ -112,6 +125,7 @@ class UserController extends Controller
             'contact_no' => $contact,
             'department_id' => $department,
             'role_id' => $role,
+            'approver_id' => $approver,
             'position_id' => $position,
         ]);
 
@@ -160,6 +174,7 @@ class UserController extends Controller
             'position' => 'required',
             'department' => 'required',
             'role' => 'required',
+            'approver' => 'required',
             'oldpassword' => 'nullable|string',
             'newpassword' => 'nullable|string',
         ]);
@@ -186,6 +201,7 @@ class UserController extends Controller
         $user->position_id = $request->position;
         $user->department_id = $request->department;
         $user->role_id = $request->role;
+        $user->approver_id = $request->approver;
         $user->save();
 
         return json_encode([

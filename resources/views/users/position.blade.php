@@ -146,7 +146,6 @@
                     processData: false,
                     success: function (response) {
                         const res = JSON.parse(response);
-                        console.log('res: ', res);
                         alertMessage(res.message, res.status);
 
                     },

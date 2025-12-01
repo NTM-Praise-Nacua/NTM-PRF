@@ -1,0 +1,11 @@
+.sidebar {
+    width: 100px;
+    background: #024a70;
+}
+
+@media (min-width: 1024px) {
+    .sidebar {
+        width: 250px;
+        background: #024a70;
+    }
+}

@@ -33,6 +33,7 @@ class CreateUsersTable extends Migration
             $table->smallInteger('role_id')->nullable();
             $table->bigInteger('parent_user_id')->nullable();
             $table->bigInteger('created_by')->nullable();
+            $table->bigInteger('approver_id')->nullable();
             $table->string('default_profile_color')->default('#565a53bf')->nullable();
             $table->rememberToken();
             $table->timestamps();

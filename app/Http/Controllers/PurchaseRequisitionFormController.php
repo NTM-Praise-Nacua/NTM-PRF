@@ -357,7 +357,18 @@ class PurchaseRequisitionFormController extends Controller
         $PRFWorkflow = $requisition->workflowSteps;
         $tracker = $requisition->tracker()->orderBy('id', 'asc')->get()->toArray();
 
-        return view('requisition.requisition-edit', compact('requisition', 'requestTypes', 'departments', 'attachments', 'PRFWorkflow', 'tracker'));
+        $user_info = User::with('approver')->find($requisition->request_by);
+        $approver = $user_info->approver;
+
+        return view('requisition.requisition-edit', 
+            compact('requisition', 
+                'requestTypes',
+                'departments',
+                'attachments',
+                'PRFWorkflow',
+                'tracker',
+                'approver'
+            ));
     }
 
     /**

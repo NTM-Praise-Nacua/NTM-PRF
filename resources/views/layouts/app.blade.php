@@ -18,6 +18,7 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
     <style>
         .sidebar {
@@ -154,7 +155,7 @@
 
         function viewPDF(file, container, height = '1111px') {
             const src = file.dataset.src;
-            // const container = $('#pdfView');
+
             container.empty();
 
             const frameEl = $('<iframe></iframe>')

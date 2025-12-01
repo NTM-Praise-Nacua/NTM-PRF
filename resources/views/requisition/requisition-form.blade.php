@@ -476,7 +476,6 @@
                     contentType: false,
                     success: function (response) {
                         const res = JSON.parse(response);
-                        console.log("response: ", res);
                         const department = res.data["department"];
                         const employee = res.data["employee"];
 
@@ -548,7 +547,6 @@
                     const divWrapper = $('<div></div>', {
                         class: 'd-flex align-items-center flex-grow-1 position-relative step-container'
                     });
-                    console.log(`flow: ${item}`);
                     const circle = $('<div></div>', {
                         class: "step-circle",
                         text: index + 1

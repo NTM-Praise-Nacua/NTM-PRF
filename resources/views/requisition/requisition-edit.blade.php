@@ -416,7 +416,7 @@
 
             <h6 class="my-3">LIST OF APPROVERS</h6>
             <div class="d-flex flex-wrap">
-                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">Test Test</div>
+                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">{{ $approver?->name }}</div>
             </div>
 
             <hr>
@@ -471,7 +471,6 @@
                     contentType: false,
                     success: function (response) {
                         const res = JSON.parse(response);
-                        console.log('response: ', res.data);
                         const employee = res.data;
 
                         const empSelect = $('select[name="assign_employee"]');

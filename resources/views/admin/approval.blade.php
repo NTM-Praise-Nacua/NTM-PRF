@@ -96,7 +96,7 @@
                                 <option value="">No Request Types Found</option>
                             @endforelse
                         </select>
-                        <button type="button" class="btn btn-primary" id="addOrdering">
+                        <button type="button" class="btn btn-sm btn-primary" id="addOrdering">
                             Add Tag
                         </button>
                     </div>
@@ -109,7 +109,7 @@
                         <form action="{{ route('add.request.type') }}" method="post">
                             @csrf
                             <input type="text" name="name" placeholder="Name" class="form-control mb-2">
-                            <button class="btn btn-primary" type="submit">Add Type</button>
+                            <button class="btn btn-sm btn-primary" type="submit">Add Type</button>
                         </form>
                     </div>
                 </div>
@@ -136,7 +136,7 @@
             </div>
         </div>
         <div class="row mt-3 mx-3">
-            <ul id="pdf-list" class="col-3">
+            <ul id="pdf-list" class="col-4">
                 
             </ul>
             <div class="col" id="pdfView" style="overflow:auto;">
@@ -237,8 +237,6 @@
                     container.empty();
 
                     const files = res.files;
-
-                    console.log('files: ', files);
 
                     files.forEach((item) => {
                         const listEl = $('<li></li>');
@@ -350,7 +348,7 @@
             if ($('.card-selector-wrapper').find('.submit-ordering').length <= 0) {
                 const submitBtn = $('<button></button>');
                 submitBtn.attr('type', 'button');
-                submitBtn.addClass('submit-ordering btn btn-success float-end shadow');
+                submitBtn.addClass('submit-ordering btn btn-sm btn-success float-end shadow');
                 submitBtn.css({
                     zIndex: 5
                 });

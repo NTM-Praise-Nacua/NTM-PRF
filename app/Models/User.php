@@ -44,7 +44,8 @@ class User extends Authenticatable
         'resignation_date',
         'deleted_at',
         'weak_password',
-        'location_status'
+        'location_status',
+        'approver_id',
     ];
 
     /**
@@ -104,5 +105,10 @@ class User extends Authenticatable
     public function requestBy()
     {
         return $this->hasMany(PurchaseRequisitionForm::class, 'request_by', 'id');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approver_id');
     }
 }

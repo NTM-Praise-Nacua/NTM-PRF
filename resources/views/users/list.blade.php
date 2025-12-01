@@ -108,6 +108,10 @@
                                 <label for="department">Department</label>
                             </div>
                             <div class="col-2">
+                            </div>
+                        </div>
+                        <div class="d-flex mb-3 gap-2">
+                            <div class="form-floating col">
                                 <select name="role" id="role" name="role" class="form-select">
                                     <option value="" selected hidden>Select Role</option>
                                     @forelse ($roles as $item)
@@ -117,6 +121,17 @@
                                     @endforelse
                                 </select>
                                 <label for="role">Role</label>
+                            </div>
+                            <div class="form-floating col">
+                                <select name="approver" id="approver" class="form-select">
+                                    <option value="" selected hidden>Select Approver</option>
+                                    @forelse ($approvers as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @empty
+                                        {{--  --}}
+                                    @endforelse
+                                </select>
+                                <label for="approver">Approver</label>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Register</button>
@@ -197,7 +212,17 @@
                                 </select>
                                 <label for="editrole">Role</label>
                             </div>
-                            <div class="col"></div>
+                            <div class="form-floating col">
+                                <select name="approver" id="editapprover" class="form-select">
+                                    <option value="" selected hidden>Select Approver</option>
+                                    @forelse ($approvers as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @empty
+                                        {{--  --}}
+                                    @endforelse
+                                </select>
+                                <label for="editapprover">Approver</label>
+                            </div>
                         </div>
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
@@ -260,10 +285,17 @@
                     contentType: false,
                     success: function (response) {
                         const res = JSON.parse(response);
+
                         if (res.status == 'success') {
                             const form = $('#editUser');
                             form.find('input:text, input:password, input[type=email], textarea, select').val('');
                             const hiddenInput = form.find('input[name="userId"]');
+                            const departmentTeam = res.departmentTeam;
+                            const approverId = res.data.approver_id;
+
+                            if (departmentTeam) {
+                                addTeamDropdown(departmentTeam, approverId);
+                            }
 
                             const firstName = form.find('input[name="first_name"]');
                             const lastName = form.find('input[name="last_name"]');
@@ -271,12 +303,14 @@
                             const contact = form.find('input[name="contact"]');
                             const position = form.find('select[name="position"]');
                             const department = form.find('select[name="department"]');
+                            const role = form.find('select[name="role"]');
 
                             hiddenInput.val(res.data.id);
                             firstName.val(res.data.first_name);
                             lastName.val(res.data.last_name);
                             email.val(res.data.email);
                             contact.val(res.data.contact_no);
+                            role.val(res.data.role_id);
                             
                             const positionValue = res.data.position_id?.toString();
                             const departmentValue = res.data.department_id?.toString();
@@ -313,7 +347,6 @@
                     processData: false,
                     success: function (response) {
                         const res = JSON.parse(response);
-                        console.log('res: ', res);
                         alertMessage(res.message, res.status);
 
                     },
@@ -324,6 +357,61 @@
                     }
                 });
             });
+
+            function addTeamDropdown(teamUsers, id) {
+                const selectEl = $('#editapprover');
+                selectEl.empty();
+                teamUsers.forEach(user => {
+                    const opt = $('<option></option>', {
+                        value: user.id,
+                        selected: id == user.id ? true : false,
+                    }).text(user.name);
+                    selectEl.append(opt);
+                });
+            }
+
+            $('select[name="department"]').on('change', function(e) {
+                const selectEl = e.currentTarget;
+                let modalEl = "add";
+
+                if (selectEl.id == "editdepartment") {
+                    modalEl = "edit";
+                }
+
+                fetchUsersByDepartment(selectEl.value, modalEl);
+            });
+            
+            function fetchUsersByDepartment(id, modal) {
+                let url = '{{ route("user.department.get", ":id") }}';
+                url = url.replace(':id', id);
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    success: function (res) {
+                        const selectEl = (modal == "edit" ? $('#editapprover') : $('#approver'));
+                        selectEl.empty();
+                        
+                        const optDefault = $('<option></option>')
+                            .val("")
+                            .text("Select Approver")
+                            .attr({
+                                selected: true,
+                                hidden: true
+                            });
+                        selectEl.append(optDefault);
+                        
+                        res.forEach(item => {
+                            const opt = $('<option></option>')
+                                .val(item.id)
+                                .text(item.name);
+                            selectEl.append(opt);
+                        });
+                    }, error: function (xhr) {
+                        console.error("error: ", xhr);
+                    }
+                });
+            }
         });
     </script>
 @endpush
