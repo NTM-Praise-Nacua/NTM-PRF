@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Position;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -20,7 +21,8 @@ class UserController extends Controller
     {
         $departments = Department::where('isActive', 1)->get();
         $positions = Position::all();
-        return view("users.list", compact('departments', 'positions'));
+        $roles = Role::where('is_active', 1)->get();
+        return view("users.list", compact('departments', 'positions','roles'));
     }
 
     public function getUsersData()
@@ -41,6 +43,9 @@ class UserController extends Controller
             })
             ->editColumn('department_id', function ($row) {
                 return $row->department->name ?? '---';
+            })
+            ->editColumn('role_id', function ($row) {
+                return $row->role->name ?? '---';
             })
             ->rawColumns(['actions'])
             ->make(true);
@@ -81,6 +86,7 @@ class UserController extends Controller
             'password' => 'required',
             'department' => 'required',
             'position' => 'required',
+            'role' => 'required',
         ]);
 
         $firstName = $request->first_name;
@@ -90,6 +96,7 @@ class UserController extends Controller
 
         $position = $request->position;
         $department = $request->department;
+        $role = $request->role;
         
         $email = $request->email;
         $password = Hash::make($request->password);
@@ -104,6 +111,7 @@ class UserController extends Controller
             'weak_password' => $request->password,
             'contact_no' => $contact,
             'department_id' => $department,
+            'role_id' => $role,
             'position_id' => $position,
         ]);
 
@@ -151,6 +159,7 @@ class UserController extends Controller
             'contact' => 'required',
             'position' => 'required',
             'department' => 'required',
+            'role' => 'required',
             'oldpassword' => 'nullable|string',
             'newpassword' => 'nullable|string',
         ]);
@@ -176,6 +185,7 @@ class UserController extends Controller
         $user->contact_no = $request->contact;
         $user->position_id = $request->position;
         $user->department_id = $request->department;
+        $user->role_id = $request->role;
         $user->save();
 
         return json_encode([

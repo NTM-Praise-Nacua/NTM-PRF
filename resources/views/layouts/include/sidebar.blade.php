@@ -10,10 +10,12 @@
         route('department.list'),
         route('position.list'),
     ]);
+
+    $user = auth()->user();
 @endphp
 
 <div class="nav nav-pills d-flex flex-column p-2 gap-2">
-    @if(auth()->user()->role_id == 1)
+    @if($user->role_id == 1 && $user->id == 1)
     <a href="{{ route('approval.setup') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('approval.setup') ? 'active-current' : '' }}">
         Approval Setup
     </a>

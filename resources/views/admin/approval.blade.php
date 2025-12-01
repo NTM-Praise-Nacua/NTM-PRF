@@ -67,6 +67,15 @@
             color: gray;
             cursor: pointer;
         }
+        #pdf-list {
+            list-style-type: none;
+        }
+        #pdf-list a {
+            text-decoration: none;
+        }
+        #pdf-list a:hover {
+            text-decoration: underline;
+        }
     </style>
 @endpush
 
@@ -115,10 +124,22 @@
         <div class="row mt-3 mx-3">
             <div class="col upload-pdf-container">
                 Click or Drop PDF Files
-                <input type="file" class="d-none" id="pdf_file" name="pdf_file">
+                <input type="file" class="d-none" id="pdf_file" name="pdf_file[]" multiple>
             </div>
-            <div class="col file-details">
+            <div class="col">
+                <div class="file-details">
+                    
+                    {{-- <div class="file-pagination">
+                        
+                    </div> --}}
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3 mx-3">
+            <ul id="pdf-list" class="col-3">
                 
+            </ul>
+            <div class="col" id="pdfView" style="overflow:auto;">
             </div>
         </div>
     </x-container>
@@ -162,8 +183,6 @@
                         .get();
                 }
 
-                console.log("ordering: ", ordering);
-                // console.log("ordering data: ", orderingData);
                 const token = $('meta[name="csrf-token"]').attr('content');
                 const formData = new FormData();
                 formData.append('requestType', requestType);
@@ -181,8 +200,6 @@
                     contentType: false,
                     success: function (res) {
                         const response = JSON.parse(res);
-                        console.log("response: ", res);
-                        console.log("response: ", response);
                         alertMessage(response.message, response.status);
                     }, error: function (xhr) {
                         console.error("error: ", xhr);
@@ -195,7 +212,68 @@
             $('.flex-area').empty();
             $('.submit-ordering').remove();
             fetchDataFlow($(this).val());
+            fetchPDF($(this).val());
         });
+
+        function fetchPDF(id) {
+            const token = $('meta[name="csrf-token"]').attr('content');
+            const formData = new FormData();
+            formData.append('request_id', id);
+            formData.append('_token', token);
+
+            $.ajax({
+                url: '{{ route("type.pdf.get") }}',
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    const res = JSON.parse(response);
+
+                    const listContainer = $('#pdf-list');
+                    listContainer.empty();
+                    
+                    const container = $('#pdfView');
+                    container.empty();
+
+                    const files = res.files;
+
+                    console.log('files: ', files);
+
+                    files.forEach((item) => {
+                        const listEl = $('<li></li>');
+                        const link = $('<a></a>', {
+                            href: "javascript:void(0);",
+                            'data-src': `{{ asset('storage') }}/${item.path}`,
+                            click: (e) => viewPDF(e.currentTarget)
+                        });
+
+                        link.text(item.original_name);
+                        listContainer.append(listEl.append(link));
+                    });
+                },
+                error: function(xhr, error) {
+                    alertMessage("Something went wrong!", "error");
+                    console.error('error: ', xhr);
+                    console.error('error: ', error);
+                }
+            });
+        }
+
+        function viewPDF(file) {
+            const src = file.dataset.src;
+            const container = $('#pdfView');
+            container.empty();
+
+            const frameEl = $('<iframe></iframe>')
+                .css({
+                    width: '100%',
+                    height: '1111px',
+                })
+                .attr('src', src);
+            
+            container.append(frameEl);
+        }
 
         function fetchDataFlow(id) {
             const token = $('meta[name="csrf-token"]').attr('content');
@@ -211,7 +289,6 @@
                 processData: false,
                 success: function (response) {
                     const res = JSON.parse(response);
-                    console.log('res: ', res);
                     // addTagLabel(res.data);
                     res.data.forEach(item => {
                         addTagLabel(item.ordering, item.id);
@@ -256,7 +333,6 @@
             dropDown.append(emptyOpt);
 
             const departments = @json($departments);
-            console.log('departments: ', departments);
                 
             departments.forEach(el => {
                 const option = $('<option></option>');
@@ -303,7 +379,6 @@
         }
 
         // Drag & Drop
-
         $(document).ready(function() {
             const dropArea = $('.upload-pdf-container');
             
@@ -329,25 +404,31 @@
                 current.css({
                     opacity: 1
                 });
-                const file = e.originalEvent.dataTransfer.files;
-                if (file[0].type == 'application/pdf') {
-                    handlePDFUploads(file[0]);
-                } else {
-                    alertMessage('Upload only PDF Files', 'warning')
+                const droppedFiles = e.originalEvent.dataTransfer.files;
+
+                const pdfFiles = [...droppedFiles].filter(f => f.type === 'application/pdf');
+
+                if (pdfFiles.length === 0) {
+                    alertMessage('Upload only PDF Files', 'warning');
+                    return;
                 }
+
+                renderPaginatedFiles(pdfFiles);
             });
         });
 
         // Click
-
         $('.upload-pdf-container').on('click', function() {
             document.getElementById('pdf_file').click();
         });
 
-        $('#pdf_file').on('change', function() {
-            const files = this.files[0];
-            if (files && files.type == "application/pdf") {
-                handlePDFUploads(files);
+        $('#pdf_file').on('change', function(e) {
+            // const files = this.files[0];
+            const files = [...e.target.files];
+            // if (files && files.type == "application/pdf") {
+            if (files.length > 0) {
+                // handlePDFUploads(files);
+                renderPaginatedFiles(files)
             } else if (files) {
                 alertMessage('Upload only PDF Files', 'warning');
             }
@@ -407,11 +488,60 @@
             fileWrapper.append(table, submitButton);
         }
 
+        let uploadedFiles = [];
+        let currentIndex = 0;
+
+        function renderPaginatedFiles(files) {
+            uploadedFiles = files;
+            currentIndex = 0;
+
+            renderCurrentFile();
+            renderPaginationControls();
+        }
+
+        function renderCurrentFile() {
+            const file = uploadedFiles[currentIndex];
+            handlePDFUploads(file);   // ← your existing function
+        }
+
+        function renderPaginationControls() {
+            const container = $('.file-details');
+            const paginationContainer = $('<div></div>', {
+                class: "file-pagination float-end",
+            });
+            paginationContainer.empty();
+
+            if (uploadedFiles.length <= 1) return; // no pagination needed
+
+            const prevBtn = $('<button class="btn btn-sm btn-secondary me-2">Prev</button>');
+            const nextBtn = $('<button class="btn btn-sm btn-secondary ms-2">Next</button>');
+            const label = $(`<span>File ${currentIndex + 1} of ${uploadedFiles.length}</span>`);
+
+            prevBtn.on('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    renderCurrentFile();
+                    renderPaginationControls();
+                }
+            });
+
+            nextBtn.on('click', () => {
+                if (currentIndex < uploadedFiles.length - 1) {
+                    currentIndex++;
+                    renderCurrentFile();
+                    renderPaginationControls();
+                }
+            });
+
+            container.append(paginationContainer.append(prevBtn, label, nextBtn));
+        }
+
+
         $('.file-details').on('click', '.submitFile', function(e) { 
             const requestType = $('#request_type').val();
             if (requestType != "") {
-                const file = $(this).data('file');
-                handlePDFSubmit(file, requestType);
+                const files = uploadedFiles;
+                handlePDFSubmit(files, requestType);
             } else {
                 alertMessage("Select a Request Type", "warning");
             }
@@ -433,11 +563,15 @@
             }
         }
 
-        function handlePDFSubmit(file, type) {
+        function handlePDFSubmit(files, type) {
             const token = $('meta[name="csrf-token"]').attr('content');
             const formData = new FormData();
-            console.log('file: ', file);
-            formData.append('file', file);
+
+            files.forEach(file => {
+
+                formData.append('files[]', file);
+            });
+
             formData.append('request_type', type);
             formData.append('_token', token);
 
@@ -448,7 +582,6 @@
                 contentType: false,
                 processData: false,
                 success: function (res) {
-                    console.log("res: ", res);
                     if (res.message == "successful") {
                         alertMessage("PDF File Uploaded Successfully!", "success");
                     } else {

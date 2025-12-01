@@ -114,6 +114,7 @@
 @endpush
 
 @php
+    $user = auth()->user();
     $counter = 0;
 
     $steps = [];
@@ -360,7 +361,7 @@
                     @endforelse
                 </div>
             </div>
-            <div class="upload-pdf-group row mb-3 {{ (is_null($nextDepId) || auth()->id() == $requisition->request_by) ? 'd-none' : '' }}">
+            <div class="upload-pdf-group row mb-3 {{ (is_null($nextDepId) || $user->id == $requisition->request_by || $user->role_id == 1) ? 'd-none' : '' }}">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
                     <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" multiple>
@@ -416,7 +417,7 @@
             <hr>
 
             <div class="button-group float-end">
-                <button type="submit" class="btn btn-sm btn-primary" {{ (is_null($nextDepId) || auth()->id() == $requisition->request_by) ? 'disabled' : '' }}>Submit</button>
+                <button type="submit" class="btn btn-sm btn-primary" {{ (is_null($nextDepId) || $user->id == $requisition->request_by || $user->role_id == 1 && $user->assign_employee != $user->id) ? 'disabled' : '' }}>Submit</button>
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
             </div>
         </form>

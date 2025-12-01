@@ -13,11 +13,15 @@
     </style>
 @endpush
 
+@php
+    $isAdmin = auth()->user()->id == 1;
+@endphp
+
 @section('content')
     <x-container pageTitle="Dashboard">
 
         <div class="row mt-1">
-            @if (auth()->user()->id != 1)
+            @if (!$isAdmin)
                 <div class="info-card card shadow bg-warning border-0">
                     <div class="card-body fw-bold text-center">
                         <p class="fs-5">Pending</p>
@@ -39,8 +43,8 @@
             </div>
             <div class="info-card card shadow bg-primary text-white border-0">
                 <div class="card-body fw-bold text-center px-1">
-                    <p class="fs-5 mb-0">Total</p>
-                    @if (auth()->user()->id != 1)
+                    <p class="fs-5 {{ $isAdmin ? "" : "mb-0" }}">Total</p>
+                    @if (!$isAdmin)
                     <span style="font-size: 10px;">(In Progress + Completed)</span>
                     @endif
                     <p class="fs-1">{{ $counters['total'] }}</p>

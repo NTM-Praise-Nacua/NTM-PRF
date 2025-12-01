@@ -4,6 +4,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PurchaseRequisitionFormController;
 use App\Http\Controllers\RequestTypeController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/approval-setup/add', [PurchaseRequisitionFormController::class, 'store'])->name('prf.add.ordering');
     
     Route::post('/prf-flow/getDataFlow', [PurchaseRequisitionFormController::class, 'getTypeFlow'])->name('type.flow');
+    Route::post('/pdf/getList', [PurchaseRequisitionFormController::class, 'getPDFFiles'])->name('type.pdf.get');
 
     Route::get('/requisition/form', [PurchaseRequisitionFormController::class, 'showForm'])->name('requisition.form');
     Route::post('/requisition/form', [PurchaseRequisitionFormController::class, 'savePRF'])->name('requisition.form.add');
@@ -65,4 +67,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/position/update', [PositionController::class, 'update'])->name('position.update');
 
     Route::post('/request/add', [RequestTypeController::class, 'store'])->name('add.request.type');
+
+    Route::post('/role/create', [RoleController::class, 'store'])->name('role.create');
 });

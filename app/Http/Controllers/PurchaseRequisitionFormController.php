@@ -45,7 +45,8 @@ class PurchaseRequisitionFormController extends Controller
     public function uploadPdf(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf',
+            'files' => 'required|array',
+            'files.*' => 'file|mimes:pdf',
             'request_type' => 'required|string',
         ]);
 
@@ -53,13 +54,18 @@ class PurchaseRequisitionFormController extends Controller
         // dd($requestType, $request->request_type);
         $requestId = $requestType->id;
 
-        $file = $request->file('file');
+        $file = $request->file('files');
 
-        $uploadedFile = $this->uploadFile($file, $requestId);
+        $uploadedFileIds = [];
+
+        foreach ($request->file('files') as $file) {
+            $uploadedFile = $this->uploadFile($file, $requestId);
+            $uploadedFileIds[] = $uploadedFile->id;
+        }
 
         return response()->json([
             'message' => 'successful',
-            'url' => $uploadedFile
+            'url' => $uploadedFileIds
         ]);
     }
 
@@ -128,6 +134,16 @@ class PurchaseRequisitionFormController extends Controller
         });
 
         return redirect()->route('requisition.history');
+    }
+
+    public function getPDFFiles(Request $request)
+    {
+        $files = UploadedFile::where('request_type_id', $request->request_id)->get();
+
+        return json_encode([
+            'status' => 'success',
+            'files' => $files
+        ]);
     }
 
     public function otherPRFDetails(Request $request)

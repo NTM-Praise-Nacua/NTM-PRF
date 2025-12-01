@@ -12,6 +12,7 @@
                         <th>Email</th>
                         <th>Position</th>
                         <th>Department</th>
+                        <th>Roles</th>
                         <th>Date Registered</th>
                         <th>Created by</th>
                         <th>Actions</th>
@@ -24,6 +25,22 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- <div class="row mt-3">
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{{ route('role.create') }}" method="POST">
+                            @csrf
+                            <label for="name">Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="enter role name">
+                            <input type="hidden" name="is_active" value="1">
+                            <button type="submit" class="btn btn-sm btn-primary">Add Role</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
     </x-container>
 
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
@@ -90,7 +107,17 @@
                                 </select>
                                 <label for="department">Department</label>
                             </div>
-                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <select name="role" id="role" name="role" class="form-select">
+                                    <option value="" selected hidden>Select Role</option>
+                                    @forelse ($roles as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @empty
+                                        {{--  --}}
+                                    @endforelse
+                                </select>
+                                <label for="role">Role</label>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Register</button>
                     </form>
@@ -136,7 +163,7 @@
                         </div>
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
-                                <select name="position" id="editposition" name="position" class="form-select" required>
+                                <select name="position" id="editposition" class="form-select" required>
                                     <option value="" selected hidden>Select Position</option>
                                     @forelse ($positions as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -147,7 +174,7 @@
                                 <label for="editposition">Position</label>
                             </div>
                             <div class="form-floating col">
-                                <select name="department" id="editdepartment" name="department" class="form-select" required>
+                                <select name="department" id="editdepartment" class="form-select" required>
                                     <option value="" selected hidden>Select Department</option>
                                     @forelse ($departments as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -157,6 +184,20 @@
                                 </select>
                                 <label for="editdepartment">Department</label>
                             </div>
+                        </div>
+                        <div class="d-flex mb-3 gap-2">
+                            <div class="form-floating col">
+                                <select name="role" id="editrole" class="form-select">
+                                    <option value="" selected hidden>Select Role</option>
+                                    @forelse ($roles as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @empty
+                                        {{--  --}}
+                                    @endforelse
+                                </select>
+                                <label for="editrole">Role</label>
+                            </div>
+                            <div class="col"></div>
                         </div>
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
@@ -193,6 +234,7 @@
                     {data: 'email'},
                     {data: 'position_id'},
                     {data: 'department_id'},
+                    {data: 'role_id'},
                     {data: 'created_at'},
                     {data: 'created_by'},
                     {data: 'actions', orderable: false, searchable: false}
