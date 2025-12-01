@@ -151,6 +151,21 @@
                 }
             });
         }
+
+        function viewPDF(file, container, height = '1111px') {
+            const src = file.dataset.src;
+            // const container = $('#pdfView');
+            container.empty();
+
+            const frameEl = $('<iframe></iframe>')
+                .css({
+                    width: '100%',
+                    height: height,
+                })
+                .attr('src', src);
+            
+            container.append(frameEl);
+        }
     </script>
 </body>
 </html>

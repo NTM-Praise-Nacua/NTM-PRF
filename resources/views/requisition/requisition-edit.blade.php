@@ -351,14 +351,19 @@
 
             <div class="mb-3">
                 <label class="inline-block fs-5 fw-bold">Attachment(s)</label>
-                <div class="attachment-list p-1 d-flex flex-column flex-wrap gap-2">
-                    @forelse ($attachments as $attachment)
-                        <div>
-                            <a href="{{ asset('storage/'. $attachment->path) }}" download>{{ $attachment->original_name }}</a>
+                <div class="d-flex">
+                    <div class="col-3">
+                        <div class="attachment-list p-1">
+                            @forelse ($attachments as $attachment)
+                                <div>
+                                    <a href="javascript:void(0);" data-src="{{ asset('storage/'. $attachment->path) }}">{{ $attachment->original_name }}</a>
+                                </div>
+                            @empty
+                                No attachments...
+                            @endforelse
                         </div>
-                    @empty
-                        No attachments...
-                    @endforelse
+                    </div>
+                    <div class="col viewPDF"></div>
                 </div>
             </div>
             <div class="upload-pdf-group row mb-3 {{ (is_null($nextDepId) || $user->id == $requisition->request_by || $user->role_id == 1) ? 'd-none' : '' }}">
@@ -433,6 +438,13 @@
                 <div class="modal-body">
                     <div class="accordion" id="requestStatusContainer">
                     </div>
+                    {{-- <div class="d-flex">
+                        <div class="col">
+                        </div>
+                        <div class="col viewPDFModal">
+
+                        </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
@@ -483,7 +495,14 @@
                 });
             }
 
+            let requestModalContent = $('#requestStatusContainer');
+
             $('.requestStatus').on('click', function() {
+                const statusModal = $('#requestStatusModal .modal-dialog')
+                    .removeClass('modal-xl');
+                let modalBody = $('#requestStatusModal .modal-body').empty();
+                modalBody.append(requestModalContent);
+
                 fetchRequisitionProcessStatus();
             });
 
@@ -501,7 +520,6 @@
                     success: function (response) {
                         const res = JSON.parse(response);
 
-                        console.log('response: ', res);
                         createRequestStatusElements(res.data.departments, res.data.files);
 
                         const modalEl = document.getElementById('requestStatusModal');
@@ -547,10 +565,11 @@
                     if (files[index]) {
                         files[index]?.forEach((file) => {
                             const link = $('<a></a>', {
-                                href: `{{ asset('storage') }}/${file.path}`,
-                                download: file.original_name,
+                                href: "javascript:void(0);",
+                                'data-src': `{{ asset('storage') }}/${file.path}`,
                                 text: file.original_name,
-                                class: 'attachment-item d-block'
+                                class: 'attachment-item d-block',
+                                click: (e) => viewPDFModal(e.currentTarget)
                             });
                             bodyEl.append(link);
                         })
@@ -560,6 +579,33 @@
 
                     wrapper.append(itemEl.append(textHeadEl, bodyWrapper));
                 });
+            }
+
+            $('.attachment-list a').on('click', function(e) {
+                const linkEl = e.currentTarget;
+                viewPDF(linkEl, $('.viewPDF'));
+            });
+            
+            function viewPDFModal(linkEl) {
+                const statusModal = $('#requestStatusModal .modal-dialog')
+                    .css({
+                        transition: "all 0.15s ease-in-out"
+                    })
+                    .addClass('modal-xl');
+
+                const accordion = $('#requestStatusContainer');
+                const modalBody = $('#requestStatusModal .modal-body');
+                modalBody.empty();
+
+                const flexContainer = $('<div class="d-flex"></div>');
+                const accordCol = $('<div class="col-4"></div>');
+                const pdfViewCol = $('<div></div>', {
+                    class: "col viewPDFModal overflow-auto"
+                });
+                accordCol.append(accordion);
+                modalBody.append(flexContainer.append(accordCol, pdfViewCol));
+
+                viewPDF(linkEl, $('.viewPDFModal'), '1000px');
             }
         });
     </script>

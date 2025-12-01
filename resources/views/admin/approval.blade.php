@@ -232,7 +232,7 @@
 
                     const listContainer = $('#pdf-list');
                     listContainer.empty();
-                    
+
                     const container = $('#pdfView');
                     container.empty();
 
@@ -245,7 +245,7 @@
                         const link = $('<a></a>', {
                             href: "javascript:void(0);",
                             'data-src': `{{ asset('storage') }}/${item.path}`,
-                            click: (e) => viewPDF(e.currentTarget)
+                            click: (e) => viewPDF(e.currentTarget, $('#pdfView'))
                         });
 
                         link.text(item.original_name);
@@ -260,20 +260,20 @@
             });
         }
 
-        function viewPDF(file) {
-            const src = file.dataset.src;
-            const container = $('#pdfView');
-            container.empty();
+        // function viewPDF(file) {
+        //     const src = file.dataset.src;
+        //     const container = $('#pdfView');
+        //     container.empty();
 
-            const frameEl = $('<iframe></iframe>')
-                .css({
-                    width: '100%',
-                    height: '1111px',
-                })
-                .attr('src', src);
+        //     const frameEl = $('<iframe></iframe>')
+        //         .css({
+        //             width: '100%',
+        //             height: '1111px',
+        //         })
+        //         .attr('src', src);
             
-            container.append(frameEl);
-        }
+        //     container.append(frameEl);
+        // }
 
         function fetchDataFlow(id) {
             const token = $('meta[name="csrf-token"]').attr('content');
