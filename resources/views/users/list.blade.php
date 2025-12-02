@@ -2,7 +2,7 @@
 
 @section('content')
     <x-container pageTitle="User List">
-        <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
+        <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
 
         <div class="">
             <table id="users-table" class="table table-hover table-striped">
@@ -51,7 +51,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('user.add') }}" method="post">
+                    <form id="addUser" method="post">
                         @csrf
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
@@ -178,7 +178,7 @@
                         </div>
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
-                                <select name="position" id="editposition" class="form-select" required>
+                                <select name="position" id="editposition" class="form-select">
                                     <option value="" selected hidden>Select Position</option>
                                     @forelse ($positions as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -189,7 +189,7 @@
                                 <label for="editposition">Position</label>
                             </div>
                             <div class="form-floating col">
-                                <select name="department" id="editdepartment" class="form-select" required>
+                                <select name="department" id="editdepartment" class="form-select">
                                     <option value="" selected hidden>Select Department</option>
                                     @forelse ($departments as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -265,6 +265,53 @@
                     {data: 'actions', orderable: false, searchable: false}
                 ]
             });
+
+            $('#addUser').on('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: "{{ route('user.add') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        const res = JSON.parse(response);
+
+                        $('.is-invalid').removeClass('is-invalid');
+                        $('.invalid-feedback').remove();
+
+                        alertMessage('Successfully Added!', 'success');
+
+                    }, error: function (xhr) {
+                        if (xhr.status === 500) {
+                            console.error('error: ', xhr.responseText);
+                            alertMessage("Something went wrong!", "error");
+                        } else {
+                            displayErrorFields(xhr.responseJSON?.errors, e.currentTarget.id);
+                        }
+                    }
+                });
+            });
+
+            function displayErrorFields(errorObj, formId) {
+                // const formById
+                // Object.keys(errorObj).forEach(key => {
+                //     console.log(`Field: ${key} | Value: ${errorObj[key]}`);
+                // });
+                // console.log('form: ', formId);
+                
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                $.each(errorObj, function(field, messages) {
+                    let input = $('[name="' + field + '"]');
+                    input.addClass('is-invalid');
+
+                    input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
+                });
+            }
 
             $(document).on('click', '.edit-btn', function() {
                 const id = $(this).data('id');
@@ -352,10 +399,13 @@
                         alertMessage(res.message, res.status);
 
                     },
-                    error: function(xhr, error) {
-                        alertMessage("Something went wrong!", "error");
-                        console.error('error: ', xhr);
-                        console.error('error: ', error);
+                    error: function(xhr) {
+                        if (xhr.status === 500) {
+                            console.error('error: ', xhr.responseText);
+                            alertMessage("Something went wrong!", "error");
+                        } else {
+                            displayErrorFields(xhr.responseJSON?.errors, e.currentTarget.id);
+                        }
                     }
                 });
             });
@@ -424,6 +474,11 @@
                     }
                 });
             }
+
+            $(document).on('click', '.add-btn, .edit-btn', function() {
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+            });
         });
     </script>
 @endpush

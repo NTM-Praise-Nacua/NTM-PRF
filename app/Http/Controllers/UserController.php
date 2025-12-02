@@ -90,11 +90,13 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'first_name' => 'required',
             'last_name' => 'required',
             'email' => 'required|email',
             'password' => 'required',
+            'contact' => 'required',
             'department' => 'required',
             'position' => 'required',
             'role' => 'required',
@@ -129,7 +131,10 @@ class UserController extends Controller
             'position_id' => $position,
         ]);
 
-        return redirect()->route('user.list');
+        return json_encode([
+            'status' => 'success',
+            'data' => $user,
+        ]);
     }
 
     /**
