@@ -28,7 +28,7 @@ class UserController extends Controller
 
     public function getUsersData()
     {
-        $users = User::with (['creator', 'position']);
+        $users = User::with (['creator', 'position', 'department']);
         return DataTables::of($users)
             ->editColumn('created_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';

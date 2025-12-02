@@ -140,7 +140,7 @@
     </div>
     @stack('js')
     <script>
-        function alertMessage(msg, status) {
+        function alertMessage(msg, status, location = "") {
             Swal.fire({
                 title: msg,
                 icon: status,
@@ -148,7 +148,11 @@
                 timer: 1500
             }).then((result) => {
                 if (result.dismiss === Swal.DismissReason.timer && status == "success") {
-                    window.location.reload();
+                    if (!location) {
+                        window.location.reload();
+                    } else {
+                        window.location.href = location;
+                    }
                 }
             });
         }

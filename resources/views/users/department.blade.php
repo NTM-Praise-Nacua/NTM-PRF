@@ -140,7 +140,6 @@
             $('#edit-department').on('submit', function(e) {
                 e.preventDefault();
                 
-                const form = $(this);
                 const formData = new FormData(this);
 
                 $.ajax({

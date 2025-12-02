@@ -258,7 +258,7 @@
                     {data: 'name'},
                     {data: 'email'},
                     {data: 'position_id'},
-                    {data: 'department_id'},
+                    {data: 'department_id', searchable: true},
                     {data: 'role_id'},
                     {data: 'created_at'},
                     {data: 'created_by'},
@@ -294,6 +294,8 @@
                             const approverId = res.data.approver_id;
 
                             if (departmentTeam) {
+                                console.log("departmentTeam: ", departmentTeam);
+                                console.log("approverId: ", approverId);
                                 addTeamDropdown(departmentTeam, approverId);
                             }
 
@@ -361,11 +363,21 @@
             function addTeamDropdown(teamUsers, id) {
                 const selectEl = $('#editapprover');
                 selectEl.empty();
+
+                const optDefault = $('<option></option>', {
+                    value: "",
+                    selected: !id ? true : false,
+                    hidden: true,
+                    text: "Select Approver",
+                });
+                selectEl.append(optDefault);
+
                 teamUsers.forEach(user => {
                     const opt = $('<option></option>', {
                         value: user.id,
                         selected: id == user.id ? true : false,
-                    }).text(user.name);
+                        text: user.name
+                    });
                     selectEl.append(opt);
                 });
             }

@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth'], function() {
 
     Route::get('/requisition/form', [PurchaseRequisitionFormController::class, 'showForm'])->name('requisition.form');
     Route::post('/requisition/form', [PurchaseRequisitionFormController::class, 'savePRF'])->name('requisition.form.add');
+    Route::post('/requisition/approve-reject', [PurchaseRequisitionFormController::class, 'approveOrReject'])->name('requisition.approve.reject');
     Route::post('/requisition/form-details', [PurchaseRequisitionFormController::class, 'otherPRFDetails'])->name('requisition.other.details');
     Route::get('/requisition/history', [PurchaseRequisitionFormController::class, 'showHistory'])->name('requisition.history');
     Route::get('/requisition/list', [PurchaseRequisitionFormController::class, 'showPRFList'])->name('requisition.list');

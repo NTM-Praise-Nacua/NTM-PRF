@@ -2,11 +2,20 @@
 
 @push('css')
     <style>
-        .highlight-yellow td {
-            background: #FFE28A !important;
+        .highlight-pending td {
+            background: #FFF9C4 !important;
         }
-        .highlight-green td {
-            background: #C1F5C1 !important;
+        .highlight-approved td {
+            background: #C8E6C9 !important;
+        }
+        .highlight-rejected td {
+            background: #FFCDD2 !important;
+        }
+        .highlight-executed td {
+            background: #BBDEFB !important;
+        }
+        .highlight-confirmed td {
+            background: #B2EBF2 !important;
         }
     </style>
 @endpush
@@ -78,10 +87,16 @@
                     }
                 ],
                 rowCallback: function(row, data, index) {
-                    if (data.status == "Approved") {
-                        $(row).addClass('highlight-green');
-                    } else if (data.assigned_employee && data.assigned_employee.id === {{ auth()->user()->id }}) {
-                        $(row).addClass('highlight-yellow');
+                    if (data.status == "Pending" && data.requestor_id != {{ auth()->user()->id }}) {
+                        $(row).addClass('highlight-pending');
+                    } else if (data.status == "Approved") {
+                        $(row).addClass('highlight-approved');
+                    } else if (data.status == "Rejected") {
+                        $(row).addClass('highlight-rejected');
+                    } else if (data.status == "Executed") {
+                        $(row).addClass('highlight-executed');
+                    } else if (data.status == "Confirmed") {
+                        $(row).addClass('highlight-confirmed');
                     }
 
                     var cell0 = $('td:eq(0)', row).css('padding', '15px');

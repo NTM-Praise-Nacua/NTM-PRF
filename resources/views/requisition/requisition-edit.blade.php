@@ -366,7 +366,7 @@
                     <div class="col viewPDF"></div>
                 </div>
             </div>
-            <div class="upload-pdf-group row mb-3 {{ (is_null($nextDepId) || $user->id == $requisition->request_by || $user->role_id == 1) ? 'd-none' : '' }}">
+            <div class="upload-pdf-group row mb-3 {{ ($user->id == $requisition->request_by || $user->role_id == 1 || in_array($requisition->status, [0, 2, 4]) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
                     <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" multiple>
@@ -422,7 +422,12 @@
             <hr>
 
             <div class="button-group float-end">
-                <button type="submit" class="btn btn-sm btn-primary" {{ (is_null($nextDepId) || $user->id == $requisition->request_by || $user->role_id == 1 && $user->assign_employee != $user->id) ? 'disabled' : '' }}>Submit</button>
+                @if ($user->id == $approver->id && $requisition->status == 0)
+                    <button type="button" class="btn btn-sm btn-primary approve-btn">Approve</button>
+                    <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
+                @else
+                    <button type="submit" class="btn btn-sm btn-primary" {{ ( $user->id == $requisition->request_by || ($user->role_id == 1 && $requisition->assign_employee != $user->id) || in_array($requisition->status, [0, 2, 4]) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'disabled' : '' }}>Submit</button>
+                @endif
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
             </div>
         </form>
@@ -620,6 +625,40 @@
                 modalBody.append(flexContainer.append(accordCol, pdfViewCol));
 
                 viewPDF(linkEl, $('.viewPDFModal'), '1000px');
+            }
+
+            $('.approve-btn').on('click', function() {
+                approveOrReject('Approved');
+            });
+
+            $('.reject-btn').on('click', function() {
+                approveOrReject('Reject');
+            });
+
+            function approveOrReject(status) {
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('id', {{ $requisition->id }});
+                formData.append('status', status);
+                $.ajax({
+                    url: '{{ route("requisition.approve.reject") }}',
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        const res = JSON.parse(response);
+
+                        if (res.status) {
+                            const statusMessage = `PRF ${status == "Approved" ? "Approved" : "Rejected"}`;
+                            alertMessage(statusMessage, res.status, '{{ route("requisition.history") }}');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error('Error: ', xhr.responseText);
+                    }
+                });
             }
         });
     </script>

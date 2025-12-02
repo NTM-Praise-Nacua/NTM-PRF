@@ -370,7 +370,7 @@
 
             <h6 class="my-3">LIST OF APPROVERS</h6>
             <div class="d-flex flex-wrap">
-                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">{{ $approver->name }}</div>
+                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">{{ $approver?->name ?? "No Approver Yet" }}</div>
             </div>
 
             <hr>

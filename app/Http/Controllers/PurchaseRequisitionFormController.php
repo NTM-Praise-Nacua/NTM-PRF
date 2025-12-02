@@ -138,6 +138,35 @@ class PurchaseRequisitionFormController extends Controller
         return redirect()->route('requisition.history');
     }
 
+    public function approveOrReject(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'status' => 'required',
+        ]);
+
+        switch ($request->status) {
+            case 'Approved':
+                $status = 1;
+                break;
+            case 'Reject':
+                $status = 2;
+                break;
+            default:
+                $status = 0;
+                break;
+        }
+
+        $requisition = PurchaseRequisitionForm::find($request->id);
+        $requisition->status = $status;
+        $requisition->save();
+
+        return json_encode([
+            'status' => 'success',
+            'data' => $requisition
+        ]);
+    }
+
     public function getPDFFiles(Request $request)
     {
         $files = UploadedFile::where('request_type_id', $request->request_id)->get();
@@ -184,6 +213,7 @@ class PurchaseRequisitionFormController extends Controller
     {
         $prfData = PurchaseRequisitionForm::with([
             'requestType',
+            'requestBy.approver',
             'positionName',
             'departmentName',
             'assignedEmployee',
@@ -196,14 +226,12 @@ class PurchaseRequisitionFormController extends Controller
             $userId = auth()->user()->id;
             $prfData->where(function ($query) use ($userId) {
                 $query->where('request_by', $userId)
-                    ->orWhere('assign_employee', $userId);
+                    ->orWhere('assign_employee', $userId)
+                    ->orWhereHas('requestBy', function ($q) use ($userId) { 
+                        $q->where('approver_id', $userId);
+                    });
             });
         }
-
-        // $prfData = $prfData->get()->map(function ($prf) {
-        //     $prf->latest_tracker = $prf->tracker->last();
-        //     return $prf;
-        // });
 
         return DataTables::of($prfData)
             ->addIndexColumn()
@@ -236,6 +264,12 @@ class PurchaseRequisitionFormController extends Controller
             })
             ->editColumn('request_by', function ($row) {
                 return $row->requestBy->name;
+            })
+            ->editColumn('requestor_id', function ($row) {
+                return $row->requestBy->id;
+            })
+            ->editColumn('approver_id', function ($row) {
+                return $row->requestBy->approver_id ?? null;
             })
             ->editColumn('position', function ($row) {
                 return $row->positionName->name;
@@ -396,7 +430,7 @@ class PurchaseRequisitionFormController extends Controller
                 $latestTracker->save();
             }
     
-            $requisition->status = 1;
+            $requisition->status = 4;
             $requisition->next_department = $requisition->department;
             $requisition->assign_employee = $requisition->request_by;
             $requisition->save();
@@ -422,7 +456,8 @@ class PurchaseRequisitionFormController extends Controller
                 $latestTracker->submitted_at = now();
                 $latestTracker->save();
             }
-    
+                
+            $requisition->status = 3;
             $requisition->next_department = $request->department_id;
             $requisition->assign_employee = $request->assign_employee;
             $requisition->save();
