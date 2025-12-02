@@ -3,13 +3,13 @@
 @section('content')
     
 <x-container pageTitle="Department List">
-    <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">Add</button>
     
     <div>
-        <table id="department-table" class="table table-hover table-striped">
+        <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">Add</button>
+        <table id="department-table" class="table table-hover table-striped my-2">
             <thead>
                 <tr>
-                    <th style="width: 1%;">No.</th>
+                    <th>No.</th>
                     <th>Name</th>
                     <th>Short Name</th>
                     <th>Created By</th>
@@ -83,7 +83,7 @@
             $('#department-table').DataTable({
                 processing: true,
                 serverSide: true,
-                dom: 'Bfrtip',
+                dom: '<"top-left"f>rtip',
                 buttons: ['colvis'],
 				scrollX: true,
                 ajax: "{{ route('department.data') }}",
@@ -93,6 +93,20 @@
                     {data: 'shortcut'},
                     {data: 'created_by'},
                     {data: 'actions', orderable: false, searchable: false}
+                ],
+                columnDefs: [
+                    {
+                        width: "200px",
+                        targets: [1]
+                    },
+                    {
+                        width: "150px",
+                        targets: [2,3]
+                    },
+                    {
+                        width:"50px",
+                        targets: [0,4]
+                    }
                 ]
             });
 

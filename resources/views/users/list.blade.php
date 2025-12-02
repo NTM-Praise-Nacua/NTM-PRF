@@ -2,18 +2,16 @@
 
 @section('content')
     <x-container pageTitle="User List">
-        <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
-
+        
         <div class="">
-            <table id="users-table" class="table table-hover table-striped">
+            <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
+            <table id="users-table" class="table table-hover table-striped my-2">
                 <thead>
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Position</th>
                         <th>Department</th>
-                        <th>Roles</th>
-                        <th>Date Registered</th>
                         <th>Created by</th>
                         <th>Actions</th>
                     </tr>
@@ -250,7 +248,7 @@
             $('#users-table').DataTable({
                 processing: true,
                 serverSide: true,
-                dom: 'Bfrtip',
+                dom: '<"top-left"f>rtip',
                 buttons: ['colvis'],
 				scrollX: true,
                 ajax: "{{ route('users.data') }}",
@@ -259,10 +257,26 @@
                     {data: 'email'},
                     {data: 'position_id'},
                     {data: 'department_id', searchable: true},
-                    {data: 'role_id'},
-                    {data: 'created_at'},
                     {data: 'created_by'},
                     {data: 'actions', orderable: false, searchable: false}
+                ],
+                columnDefs: [
+                    {
+                        width: "200px",
+                        targets: [1]
+                    },
+                    {
+                        width: "150px",
+                        targets: [3,4]
+                    },
+                    {
+                        width: "100px",
+                        targets: [0,2]
+                    },
+                    {
+                        width:"50px",
+                        targets: [5]
+                    }
                 ]
             });
 

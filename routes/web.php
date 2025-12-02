@@ -45,6 +45,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('/requisition/{requisition}/edit', [PurchaseRequisitionFormController::class, 'edit'])->name('requisition.edit');
     Route::post('/requisition/employee-department', [PurchaseRequisitionFormController::class, 'getEmployeeByDepartment'])->name('requisition.employee.department');
     Route::put('/requisition/{requisition}/update', [PurchaseRequisitionFormController::class, 'update'])->name('requisition.form.update');
+    Route::post('/requisition/status/update', [PurchaseRequisitionFormController::class, 'updateStatus'])->name('requisition.status.update');
     Route::post('/requisition/request/status', [PurchaseRequisitionFormController::class, 'getRequestStatus'])->name('requisition.request.status');
     
     Route::get('/users', [UserController::class, 'index'])->name('user.list');

@@ -139,10 +139,21 @@
             <ul id="pdf-list" class="col-4">
                 
             </ul>
-            <div class="col" id="pdfView" style="overflow:auto;">
-            </div>
         </div>
     </x-container>
+
+    <div class="modal fade" id="requestorViewAttach" tabindex="-1" aria-labelledby="requestorViewAttachLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="requestorViewAttachLabel"></h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('js')
@@ -243,7 +254,21 @@
                         const link = $('<a></a>', {
                             href: "javascript:void(0);",
                             'data-src': `{{ asset('storage') }}/${item.path}`,
-                            click: (e) => viewPDF(e.currentTarget, $('#pdfView'))
+                            click: (e) => {
+                                const modalViewAttach = $('#requestorViewAttach .modal-body');
+                                modalViewAttach
+
+                                const linkEl = e.currentTarget;
+                                const linkName = linkEl.innerText;
+                                const modalLabel = $('#requestorViewAttachLabel');
+                                modalLabel.text(linkName);
+
+                                const modalEl = document.getElementById('requestorViewAttach');
+                                const modal = new bootstrap.Modal(modalEl);
+                                modal.show();
+                                
+                                viewPDF(linkEl, modalViewAttach, '800px');
+                            }
                         });
 
                         link.text(item.original_name);
@@ -257,21 +282,6 @@
                 }
             });
         }
-
-        // function viewPDF(file) {
-        //     const src = file.dataset.src;
-        //     const container = $('#pdfView');
-        //     container.empty();
-
-        //     const frameEl = $('<iframe></iframe>')
-        //         .css({
-        //             width: '100%',
-        //             height: '1111px',
-        //         })
-        //         .attr('src', src);
-            
-        //     container.append(frameEl);
-        // }
 
         function fetchDataFlow(id) {
             const token = $('meta[name="csrf-token"]').attr('content');

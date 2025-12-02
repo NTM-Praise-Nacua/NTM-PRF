@@ -414,7 +414,11 @@
                     <button type="button" class="btn btn-sm btn-primary approve-btn">Approve</button>
                     <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
                 @else
-                    <button type="submit" class="btn btn-sm btn-primary" {{ ( $user->id == $requisition->request_by || ($user->role_id == 1 && $requisition->assign_employee != $user->id) || in_array($requisition->status, [0, 2, 4]) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'disabled' : '' }}>Submit</button>
+                    @if ($requisition->status == 4 && $user->id == $requisition->request_by)
+                        <button type="button" class="btn btn-sm btn-success complete-btn">Complete</button>
+                    @else
+                        <button type="submit" class="btn btn-sm btn-primary" {{ ( $user->id == $requisition->request_by || ($user->role_id == 1 && $requisition->assign_employee != $user->id) || in_array($requisition->status, [0, 2, 4]) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'disabled' : '' }}>Submit</button>
+                    @endif
                 @endif
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
             </div>
@@ -453,6 +457,29 @@
 @push('js')
     <script>
         $(document).ready(function(){
+            $('.complete-btn').on('click', function() {
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('id', {{ $requisition->id }});
+                formData.append('status', 5);
+                $.ajax({
+                    url: "{{ route('requisition.status.update') }}",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        const res = JSON.parse(response);
+                        
+                        alertMessage(res.message, res.status, "{{ route('requisition.history') }}");
+                    }, error: function (xhr) {
+                        alertMessage('Something Went Wrong!', 'error');
+                        console.error('error: ', xhr.responseText);
+                    }
+                })
+            })
+
             getEmployees();
 
             function getEmployees() {

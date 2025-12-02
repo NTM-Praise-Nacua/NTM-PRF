@@ -64,6 +64,9 @@
             background: #212529 !important;
             color: white !important;
         }
+        .top-left {
+            float: left;
+        }
     </style>
 
     @stack('css')

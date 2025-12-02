@@ -257,8 +257,9 @@ class PurchaseRequisitionFormController extends Controller
                     0 => 'Pending',
                     1 => 'Approved',
                     2 => 'Rejected',
-                    3 => 'Executed',
-                    4 => 'Confirmed',
+                    3 => 'In Progress',
+                    4 => 'Executed',
+                    5 => 'Completed',
                 ];
                 return $status[$row->status];
             })
@@ -479,6 +480,24 @@ class PurchaseRequisitionFormController extends Controller
         
         
         return redirect()->route("requisition.history");
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'status' => 'required',
+        ]);
+
+        $requisition = PurchaseRequisitionForm::find($request->id);
+        $requisition->status = $request->status;
+        $requisition->save();
+
+        return json_encode([
+            'status' => 'success',
+            'message' => 'Requisition Completed!',
+            'data' => $requisition,
+        ]);
     }
 
     public function getRequestStatus(Request $request)

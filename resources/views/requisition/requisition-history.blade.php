@@ -11,23 +11,34 @@
         .highlight-rejected td {
             background: #FFCDD2 !important;
         }
-        .highlight-executed td {
+        .highlight-inprogress td {
             background: #BBDEFB !important;
         }
-        .highlight-confirmed td {
+        .highlight-executed td {
             background: #B2EBF2 !important;
+        }
+        .highlight-completed td {
+            background: #28A745 !important;
+            color: white !important;
+        }
+        .single-line-column {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
         }
     </style>
 @endpush
 
 @section('content')
     <x-container pageTitle="PRF History">
-        @if (auth()->user()->id != 1)
-            <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end">Add Request</a>
-        @endif
-
+        
         <div class="">
-            <table id="prf-table" class="table table-striped table-hover no-wrap">
+            @if (auth()->user()->id != 1)
+                <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end">Add Request</a>
+            @endif
+
+            <table id="prf-table" class="table table-striped table-hover no-wrap my-2">
                 <thead>
                     <tr>
                         <th class="text-center">No</th>
@@ -36,13 +47,11 @@
                         <th class="text-center">Date Needed</th>
                         <th class="text-center">Status</th>
                         <th class="text-center">Requested By</th>
-                        <th class="text-center">Contact</th>
-                        <th class="text-center">Position</th>
                         <th class="text-center">Department</th>
                         <th class="text-center">Branch</th>
                         <th class="text-center">Urgency</th>
                         <th class="text-center">Request Details</th>
-                        <th class="text-center">Current Assigned EE</th>
+                        <th class="text-center">Assigned Employee</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -60,7 +69,7 @@
             $('#prf-table').DataTable({
                 processing: true,
                 serverSide: true,
-                dom: 'Bfrtip',
+                dom: '<"top-left"f>rtip',
                 buttons: ['colvis'],
 				scrollX: true,
                 ajax: "{{ route('requisition.list') }}",
@@ -71,8 +80,6 @@
                     {data: 'date_needed'},
                     {data: 'status'},
                     {data: 'request_by'},
-                    {data: 'contact', orderable: false},
-                    {data: 'position'},
                     {data: 'department'},
                     {data: 'branch'},
                     {data: 'urgency'},
@@ -84,6 +91,21 @@
                     {
                         type: "string",
                         targets: 6
+                    },
+                    {
+                        width: "200px",
+                        targets: [1,6]
+                    },
+                    {
+                        width: "150px",
+                        targets: [2,3,5,9,10]
+                    },
+                    {
+                        width: "100px",
+                        targets: [4,7,8,10]
+                    },
+                    {
+                        className: 'single-line-column', targets: 9
                     }
                 ],
                 rowCallback: function(row, data, index) {
@@ -93,14 +115,16 @@
                         $(row).addClass('highlight-approved');
                     } else if (data.status == "Rejected") {
                         $(row).addClass('highlight-rejected');
+                    } else if (data.status == "In Progress") {
+                        $(row).addClass('highlight-inprogress');
                     } else if (data.status == "Executed") {
                         $(row).addClass('highlight-executed');
-                    } else if (data.status == "Confirmed") {
-                        $(row).addClass('highlight-confirmed');
+                    } else if (data.status == "Completed") {
+                        $(row).addClass('highlight-completed');
                     }
 
                     var cell0 = $('td:eq(0)', row).css('padding', '15px');
-                    var cell1 = $('td:eq(1)', row).css('padding', '5px');
+                    var cell1 = $('td:eq(1)', row).css('padding', '15px');
                     var cell2 = $('td:eq(2)', row).css('padding', '15px');
                     var cell3 = $('td:eq(3)', row).css('padding', '15px');
                     var cell4 = $('td:eq(4)', row).css('padding', '15px');

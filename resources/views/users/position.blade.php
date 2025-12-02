@@ -2,13 +2,13 @@
 
 @section('content')
     <x-container pageTitle=" Position List">
-        <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addPositionModal">Add</button>
-
+        
         <div class="">
-            <table id="positions-table" class="table table-hover table-striped">
+            <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addPositionModal">Add</button>
+            <table id="positions-table" class="table table-hover table-striped my-2">
                 <thead>
                     <tr>
-                        <th style="width: 5%;">No</th>
+                        <th>No</th>
                         <th>Position</th>
                         <th>Created By</th>
                         <th>Date Added</th>
@@ -80,7 +80,7 @@
             $('#positions-table').DataTable({
                 processing: true,
                 serverSide: true,
-                dom: 'Bfrtip',
+                dom: '<"top-left"f>rtip',
                 buttons: ['colvis'],
 				scrollX: true,
                 ajax: "{{ route('position.data') }}",
@@ -90,6 +90,20 @@
                     {data: 'created_by'},
                     {data: 'created_at'},
                     {data: 'actions', orderable: false, searchable: false}
+                ],
+                columnDefs: [
+                    {
+                        width: "300px",
+                        targets: [1]
+                    },
+                    {
+                        width: "150px",
+                        targets: [2,3]
+                    },
+                    {
+                        width:"50px",
+                        targets: [0,4]
+                    }
                 ]
             });
 
