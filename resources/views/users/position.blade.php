@@ -32,7 +32,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('position.add') }}" method="post">
+                    <form id="addPosition" action="{{ route('position.add') }}" method="post">
                         @csrf
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
@@ -93,6 +93,52 @@
                 ]
             });
 
+            $('#addPosition').on('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: "{{ route('department.add') }}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        const res = JSON.parse(response);
+
+                        $('.is-invalid').removeClass('is-invalid');
+                        $('.invalid-feedback').remove();
+
+                        alertMessage('Successfully Added!', 'success');
+
+                    }, error: function (xhr) {
+                        if (xhr.status === 500) {
+                            console.error('error: ', xhr.responseText);
+                            alertMessage("Something went wrong!", "error");
+                        } else {
+                            displayErrorFields(xhr.responseJSON?.errors, e.currentTarget.id);
+                        }
+                    }
+                });
+            });
+
+            function displayErrorFields(errorObj, formId) {
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                $.each(errorObj, function(field, messages) {
+                    let input = $('[name="' + field + '"]');
+                    input.addClass('is-invalid');
+
+                    input.after('<div class="invalid-feedback">' + messages[0] + '</div>');
+                });
+            }
+
+            $(document).on('click', '.add-btn, .edit-btn', function() {
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+            });
+
             $(document).on('click', '.edit-btn', function() {
                 const id = $(this).data('id');
                 fetchPositionData(id);
@@ -150,9 +196,12 @@
 
                     },
                     error: function(xhr, error) {
-                        alertMessage("Something went wrong!", "error");
-                        console.error('error: ', xhr);
-                        console.error('error: ', error);
+                        if (xhr.status === 500) {
+                            console.error('error: ', xhr.responseText);
+                            alertMessage("Something went wrong!", "error");
+                        } else {
+                            displayErrorFields(xhr.responseJSON?.errors, e.currentTarget.id);
+                        }
                     }
                 });
             });

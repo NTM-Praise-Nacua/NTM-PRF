@@ -149,13 +149,7 @@
     $nextIndex = array_key_last($tracker) + 1;
     $nextDepartment = optional($PRFWorkflow->get($nextIndex))?->toArray();
     
-    // dd($PRFWorkflow);
     $nextDepId = $nextDepartment ? $nextDepartment['ordering'] : null;
-
-    // dd($nextDepId);
-    // dd(auth()->user()->id,$requisition->request_by);
-    // $nextDepId = $nextDepartment?->ordering;
-    // dd($nextDepId);
 @endphp
 
 @section('content')
@@ -164,7 +158,6 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center">
                 @foreach($steps as $index => $step)
                     <div class="d-flex align-items-center flex-grow-1 position-relative step-container">
-                        {{-- Circle with check or number --}}
                         <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : '') }}">
                             @if($step['status'] == 'completed')
                                 &#10003;
@@ -173,13 +166,11 @@
                             @endif
                         </div>
 
-                        {{-- Step info --}}
                         <div>
                             <div class="fw-bold">{{ $step['name'] }}</div>
                             <small class="text-muted">{{ $step['date'] }}</small>
                         </div>
 
-                        {{-- Connector line, except for last step --}}
                         @if(!$loop->last)
                             <div class="step-line flex-grow-1 {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : '') }}"></div>
                         @endif
@@ -218,7 +209,6 @@
                 </div>
                 <div class="col">
                     <div class="form-floating">
-                        {{-- <input type="hidden" name="status" value="{{ $requisition->status }}"> --}}
                         <select id="formStat" name="selectstatus" disabled="disabled" aria-required="true" aria-invalid="false" class="form-select @error('status') is-invalid @enderror">
                             <option value="0" {{ $requisition->status === 0 ? 'selected' : '' }}>Pending</option>
                             <option value="1" {{ $requisition->status === 1 ? 'selected' : '' }}>Approved</option>
@@ -260,7 +250,6 @@
                 </div>
                 <div class="col">
                     <div class="form-floating">
-                        {{-- <input type="hidden" name="position" class="form-control bg-white" placeholder="Position" value="{{ $requisition->position }}"> --}}
                         <input type="text" name="position_id" id="position" class="form-control bg-white @error('position') is-invalid @enderror" placeholder="Position" value="{{ $requisition->positionName->name }}" disabled>
                         <label for="position_id">Position</label>
                         <div class="invalid-feedback">
@@ -274,7 +263,6 @@
             <div class="row mb-3">
                 <div class="col">
                     <div class="form-floating">
-                        {{-- <input type="hidden" name="department"  class="form-control bg-white" placeholder="Department" value="{{ $requisition->department }}"> --}}
                         <input type="text" name="department_id" id="department" class="form-control bg-white @error('department') is-invalid @enderror" placeholder="Department" value="{{ $requisition->departmentName->name }}" disabled>
                         <label for="department_id">Department</label>
                         <div class="invalid-feedback">
@@ -579,7 +567,6 @@
                                 'data-src': `{{ asset('storage') }}/${file.path}`,
                                 text: file.original_name,
                                 class: 'attachment-item d-block',
-                                click: (e) => viewPDFModal(e.currentTarget)
                             });
                             bodyEl.append(link);
                         })
@@ -603,6 +590,11 @@
                 modal.show();
 
                 viewPDF(linkEl, modalViewAttach, '800px');
+            });
+
+            $(document).on('click', '.attachment-item', function(e) {
+                e.preventDefault();
+                viewPDFModal(e.currentTarget);
             });
             
             function viewPDFModal(linkEl) {

@@ -296,12 +296,6 @@
             });
 
             function displayErrorFields(errorObj, formId) {
-                // const formById
-                // Object.keys(errorObj).forEach(key => {
-                //     console.log(`Field: ${key} | Value: ${errorObj[key]}`);
-                // });
-                // console.log('form: ', formId);
-                
                 $('.is-invalid').removeClass('is-invalid');
                 $('.invalid-feedback').remove();
 

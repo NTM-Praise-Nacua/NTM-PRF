@@ -161,6 +161,7 @@
             const src = file.dataset.src;
 
             container.empty();
+            console.log('container: ', container);
 
             const frameEl = $('<iframe></iframe>')
                 .css({
