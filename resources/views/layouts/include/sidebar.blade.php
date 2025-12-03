@@ -1,5 +1,5 @@
 <div class="sidenav navbar justify-content-center border mb-2 fw-bold">
-    <a class="navbar-brand text-white" href="{{ url('/') }}">
+    <a class="navbar-brand text-white" href="javascript:void(0);">
         PR LOGO
     </a>
 </div>
@@ -15,6 +15,9 @@
 @endphp
 
 <div class="nav nav-pills d-flex flex-column p-2 gap-2">
+    <a href="{{ route('home') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('home') ? 'active-current' : '' }}">
+        Dashboard
+    </a>
     @if($user->role_id == 1 && $user->id == 1)
     <a href="{{ route('approval.setup') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('approval.setup') ? 'active-current' : '' }}">
         Approval Setup

@@ -7,10 +7,11 @@ use Carbon\Carbon;
 
 class RequisitionService
 {
-  public function getStatusCounters()
+  public function getStatusCounters($monthYear)
   {
-    $month = request('month', Carbon::now()->month);
-    $year = request('year', Carbon::now()->year);
+    [$month, $year] = explode('-', $monthYear);
+    // $month = request('month', Carbon::now()->month);
+    // $year = request('year', Carbon::now()->year);
 
     $start = Carbon::create($year, $month, 1)->startOfMonth();
     $end = Carbon::create($year, $month, 1)->endOfMonth();
@@ -19,24 +20,39 @@ class RequisitionService
     $userId = $user->id;
     $userRole = $user->role_id;
 
-    $pending = PurchaseRequisitionForm::where('status', '!=', 1)
-      ->whereBetween('created_at', [$start, $end])
-      ->when($userRole != 1, fn($q) => $q->where('assign_employee', $userId))
-      ->count();
-
-    $inProgress = PurchaseRequisitionForm::where('status', '!=', 1)
+    $pending = PurchaseRequisitionForm::where('status', 0)
       ->whereBetween('created_at', [$start, $end])
       ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
       ->count();
 
-    $completed = PurchaseRequisitionForm::where('status', 1)
+    $approved = PurchaseRequisitionForm::where('status', 1)
       ->whereBetween('created_at', [$start, $end])
       ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
       ->count();
 
-    $total = $inProgress + $completed;
+    $rejected = PurchaseRequisitionForm::where('status', 2)
+      ->whereBetween('created_at', [$start, $end])
+      ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
+      ->count();
+    
+    $inProgress = PurchaseRequisitionForm::where('status', 3)
+      ->whereBetween('created_at', [$start, $end])
+      ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
+      ->count();
 
-    return compact('pending', 'inProgress', 'completed', 'total');
+    $executed = PurchaseRequisitionForm::where('status', 4)
+      ->whereBetween('created_at', [$start, $end])
+      ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
+      ->count();
+    
+    $completed = PurchaseRequisitionForm::where('status', 5)
+      ->whereBetween('created_at', [$start, $end])
+      ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
+      ->count();
+
+    $total = $pending + $approved + $rejected + $inProgress + $executed + $completed;
+
+    return compact('pending', 'approved', 'rejected', 'inProgress', 'executed', 'completed', 'total');
   }
 }
 

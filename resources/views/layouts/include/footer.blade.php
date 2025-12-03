@@ -1,1 +1,1 @@
-{{ date('Y') }}
+{{ date('Y') }} © NorthTrend

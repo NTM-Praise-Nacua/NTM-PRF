@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\RequisitionService;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -24,10 +25,13 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
-        $counters = $this->getStatusCounters->getStatusCounters();
+        $monthYear = $request->input('month_year', Carbon::now()->format('m-Y'));
+        $counters = $this->getStatusCounters->getStatusCounters($monthYear);
+        $formatMonthYear = Carbon::createFromFormat('m-Y', $monthYear);
+        $formatted = $formatMonthYear->format('M. Y');
         
-        return view('dashboard', compact('counters'));
+        return view('dashboard', compact('counters', 'formatted'));
     }
 }

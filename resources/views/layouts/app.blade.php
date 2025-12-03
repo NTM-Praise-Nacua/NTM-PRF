@@ -13,9 +13,11 @@
     <script src="{{ asset('js/app.js') }}" defer></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-
+    {{-- <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"> --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
@@ -80,7 +82,7 @@
         @endauth
         <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
             <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm position-sticky top-0" style="z-index: 5;">
-                <div class="container">
+                <div class="d-flex align-items-center justify-content-between w-100 mx-2">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                         <span class="navbar-toggler-icon"></span>
                     </button>
@@ -135,7 +137,7 @@
             </main>
 
             @auth
-            <footer class="footer border-top d-flex align-items-center ps-3">
+            <footer class="footer border-top d-flex align-items-center justify-content-center ps-3">
                 @include('layouts.include.footer')
             </footer>
             @endauth
@@ -143,38 +145,44 @@
     </div>
     @stack('js')
     <script>
-        function alertMessage(msg, status, location = "") {
-            Swal.fire({
-                title: msg,
-                icon: status,
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer && status == "success") {
-                    if (!location) {
-                        window.location.reload();
-                    } else {
-                        window.location.href = location;
+        $(function() {
+            function alertMessage(msg, status, location = "") {
+                Swal.fire({
+                    title: msg,
+                    icon: status,
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then((result) => {
+                    if (result.dismiss === Swal.DismissReason.timer && status == "success") {
+                        if (!location) {
+                            window.location.reload();
+                        } else {
+                            window.location.href = location;
+                        }
                     }
-                }
+                });
+            }
+
+            function viewPDF(file, container, height = '1111px') {
+                const src = file.dataset.src;
+
+                container.empty();
+                console.log('container: ', container);
+
+                const frameEl = $('<iframe></iframe>')
+                    .css({
+                        width: '100%',
+                        height: height,
+                    })
+                    .attr('src', src);
+                
+                container.append(frameEl);
+            }
+
+            $('.sidenav .navbar-brand').on('click', function() {
+                window.location.reload();
             });
-        }
-
-        function viewPDF(file, container, height = '1111px') {
-            const src = file.dataset.src;
-
-            container.empty();
-            console.log('container: ', container);
-
-            const frameEl = $('<iframe></iframe>')
-                .css({
-                    width: '100%',
-                    height: height,
-                })
-                .attr('src', src);
-            
-            container.append(frameEl);
-        }
+        });
     </script>
 </body>
 </html>
