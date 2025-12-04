@@ -1,7 +1,8 @@
-<div class="sidenav navbar justify-content-center border mb-2 fw-bold">
-    <a class="navbar-brand text-white" href="javascript:void(0);">
+<div class="sidenav navbar justify-content-center border mb-2 fw-bold py-2 position-relative">
+    <a class="navbar-brand text-white" href="javascript:void(0);" style="height: 40px;">
         PR LOGO
     </a>
+    <x-menu></x-menu>
 </div>
 
 @php

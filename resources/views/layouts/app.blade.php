@@ -23,20 +23,69 @@
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 
     <style>
+        /* Transfer to custom.css ======= START */
         .sidebar {
             width: 250px;
             min-width: 250px;
             background: #024a70;
-            display: none !important;
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            transition: all 0.15s ease-in-out;
+        }
+        .sidebar-close {
+            width: 0;
+            min-width: 0;
+            left: -250px;
+        }
+        .sidebar-close .menu-btn {
+            right: -300px;
+        }
+        .menu-btn {
+            display: inline-block;
+            cursor: pointer;
+            position: absolute;
+            right: -50px;
+            transition: right 0.15s ease-in-out;
         }
         @media (min-width: 1024px) {
             .sidebar {
                 display: block !important;
-                width: 250px;
-                min-width: 250px;
                 background: #024a70;
+                position: unset !important;
+            }
+            .sidebar-close {
+                width: 250px !important;
+                min-width: 250px !important;
+                left: 0 !important;
+            }
+            .menu-btn {
+                display: none !important;
             }
         }
+        
+
+        .bar1, .bar2, .bar3 {
+            width: 35px;
+            height: 5px;
+            background-color: #333;
+            margin: 6px 0;
+            transition: 0.4s;
+        }
+
+        .change .bar1 {
+            transform: translate(0, 11px) rotate(-45deg);
+        }
+
+        .change .bar2 {opacity: 0;}
+
+        .change .bar3 {
+            transform: translate(0, -11px) rotate(45deg);
+        }
+
+        /* Transfer to custom.css ======= END */
+
         #usersDropdown {
             background: #033D5E;
         }
@@ -63,7 +112,7 @@
         }
         .tab-link:not(.active-current):hover {
             opacity: 0.75;
-            background: #025178;
+            background: #617580;
         }
         .active-current, .sidenav {
             background: #00598a !important;
@@ -85,26 +134,16 @@
 <body>
     <div id="app" class="d-flex container-fluid p-0 vh-100">
         @auth
-        <div class="sidebar position-sticky h-100 d-flex flex-column">
+        <div class="sidebar position-sticky h-100 d-flex flex-column sidebar-close shadow">
             @include('layouts.include.sidebar')
         </div>
         @endauth
         <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
             <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm position-sticky top-0" style="z-index: 5;">
-                <div class="d-flex align-items-center justify-content-between w-100 mx-2">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+                <div class="d-flex align-items-center justify-content-between w-100 mx-2" style="height: 40px;">
     
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <!-- Left Side Of Navbar -->
-                        <ul class="navbar-nav me-auto">
-    
-                        </ul>
-    
-                        <!-- Right Side Of Navbar -->
+                    <div class="d-flex justify-content-end w-100 position-relative" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto">
-                            <!-- Authentication Links -->
                             @guest
                                 @if (Route::has('login'))
                                     <li class="nav-item">
@@ -123,7 +162,7 @@
                                         {{ Auth::user()->name }}
                                     </a>
     
-                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <div class="dropdown-menu dropdown-menu-end shadow" style="position: absolute !important; top: 42px;" aria-labelledby="navbarDropdown">
                                         <a class="dropdown-item" href="{{ route('logout') }}"
                                            onclick="event.preventDefault();
                                                          document.getElementById('logout-form').submit();">

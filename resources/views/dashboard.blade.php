@@ -3,13 +3,28 @@
     <style>
         .info-card {
             position: relative;
-            width: 150px;
-            height: 150px;
+            width: 100%;
+            height: 100px;
             margin-right: 20px;
             overflow: hidden;
             border-radius: 10px;
             background: #111;
             transition: transform .15s ease-in-out, box-shadow .3s ease;
+        }
+        .card-body {
+            display: flex;
+            justify-content: space-between;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+        .card-body p {
+            margin: 0;
+        }
+        .card-body > span {
+            width: 50%;
+        }
+        .card-body span p {
+            font-size: 50px !important;
         }
         .info-card:hover {
             transform: scale(1.05);
@@ -49,12 +64,17 @@
         .bg-executed {
             background: #00BCD4 !important
         }
-        /* .datepicker-dropdown {
-            padding: .75rem !important;
-            border-radius: .5rem !important;
-        } */
         #monthYear {
             width: 200px !important;
+        }
+        @media (min-width: 768px) {
+            .info-card {
+                width: 150px;
+                height: 150px;
+            }
+            .card-body {
+                display: inline-block;
+            }
         }
     </style>
 @endpush
@@ -70,7 +90,7 @@
             <input type="text" class="form-control" id="monthYear" name="month_year">
         </div> --}}
         <div class="date my-2">
-            <input type="text" class="form-control" id="monthYear" name="month_year" placeholder="Pick a Date" autocomplete="off">
+            <input type="text" class="form-control" id="monthYear" name="month_year" placeholder="Pick a Month" autocomplete="off">
             <div class="input-group-addon">
                 <span class="glyphicon glyphicon-th"></span>
             </div>
@@ -79,43 +99,57 @@
             <div class="info-card card shadow bg-warning bg-gradient border-0">
                 <div class="card-body fw-bold text-center">
                     <p class="fs-6">Pending</p>
-                    <p class="fs-1">{{ $counters['pending'] }}</p>
+                    <span>
+                        <p class="fs-1">{{ $counters['pending'] }}</p>
+                    </span>
                 </div>
             </div>
             <div class="info-card card shadow bg-success bg-gradient border-0">
                 <div class="card-body text-white fw-bold text-center">
                     <p class="fs-6">Approved</p>
+                    <span>
                     <p class="fs-1">{{ $counters['approved'] }}</p>
+                    </span>
                 </div>
             </div>
             <div class="info-card card shadow bg-danger bg-gradient border-0">
                 <div class="card-body text-white fw-bold text-center">
                     <p class="fs-6">Rejected</p>
+                    <span>
                     <p class="fs-1">{{ $counters['rejected'] }}</p>
+                    </span>
                 </div>
             </div>
             <div class="info-card card shadow bg-inprogress bg-gradient border-0">
                 <div class="card-body fw-bold text-center">
                     <p class="fs-6">In Progress</p>
+                    <span>
                     <p class="fs-1">{{ $counters['inProgress'] }}</p>
+                    </span>
                 </div>
             </div>
             <div class="info-card card shadow bg-executed bg-gradient border-0">
                 <div class="card-body fw-bold text-center">
                     <p class="fs-6">Executed</p>
+                    <span>
                     <p class="fs-1">{{ $counters['executed'] }}</p>
+                    </span>
                 </div>
             </div>
             <div class="info-card card shadow bg-complete bg-gradient border-0">
                 <div class="card-body text-white fw-bold text-center">
                     <p class="fs-6">Completed</p>
+                    <span>
                     <p class="fs-1">{{ $counters['completed'] }}</p>
+                    </span>
                 </div>
             </div>
             <div class="info-card card shadow bg-primary bg-gradient border-0">
                 <div class="card-body fw-bold text-center px-1">
                     <p class="fs-6 {{ $isAdmin ? "" : "mb-0" }}">Total</p>
+                    <span>
                     <p class="fs-1">{{ $counters['total'] }}</p>
+                    </span>
                 </div>
             </div>
         </div>
