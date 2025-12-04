@@ -116,6 +116,7 @@
 @endpush
 
 @php
+
     $user = auth()->user();
     $counter = 0;
     $isBetween = false;
@@ -137,9 +138,9 @@
         }
 
         if ($status === 'completed') {
-            $displayDate = (new DateTime($rawSubmittedAt))->format("D, F j");
+            $displayDate = (new DateTime($rawSubmittedAt))->format("D, F j, h:i a");
         } elseif ($status === 'pending') {
-            $displayDate = date("D, F j");
+            $displayDate = date("D, F j, h:i a");
         } else {
             $displayDate = '---';
         }
@@ -230,8 +231,9 @@
                             <option value="0" {{ $requisition->status === 0 ? 'selected' : '' }}>Pending</option>
                             <option value="1" {{ $requisition->status === 1 ? 'selected' : '' }}>Approved</option>
                             <option value="2" {{ $requisition->status === 2 ? 'selected' : '' }}>Rejected</option>
-                            <option value="3" {{ $requisition->status === 3 ? 'selected' : '' }}>Executed</option>
-                            <option value="4" {{ $requisition->status === 4 ? 'selected' : '' }}>Confirmed</option>
+                            <option value="3" {{ $requisition->status === 3 ? 'selected' : '' }}>In Progress</option>
+                            <option value="4" {{ $requisition->status === 4 ? 'selected' : '' }}>Executed</option>
+                            <option value="5" {{ $requisition->status === 5 ? 'selected' : '' }}>Completed</option>
                         </select>
                         <label for="formStat">Status</label>
                         <div class="invalid-feedback">
@@ -444,7 +446,7 @@
                     @if ($requisition->status == 4 && $user->id == $requisition->request_by)
                         <button type="button" class="btn btn-sm btn-success complete-btn">Complete</button>
                     @else
-                        @if ($isBetween && $user->id != $requisition->request_by)
+                        @if ($isBetween && $user->id != $requisition->request_by && $user->id != $approver->id)
                             <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
                         @endif
                         <button type="submit" class="btn btn-sm btn-primary" {{ ($user->id == $requisition->request_by || $requisition->assign_employee != $user->id || ($requisition->assign_employee == $user->id && $requisition->status == 0)) ? 'disabled' : '' }}>Submit</button>

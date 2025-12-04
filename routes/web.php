@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 Route::get('/', function() {
     return redirect('home');
-})->name('home');
+});
 
 Auth::routes();
 Route::group(['middleware' => 'auth'], function() {
