@@ -65,7 +65,8 @@ body {
     top: 0;
     left: 0;
     z-index: 10;
-    transition: all 0.15s ease-in-out;
+    transition: width 0.15s ease-in-out, min-width 0.15s ease-in-out,
+        left 0.15s ease-in-out, position 0.15s ease-in-out;
 }
 .sidebar-close {
     width: 0;
