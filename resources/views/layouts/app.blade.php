@@ -24,65 +24,6 @@
 
     <style>
         /* Transfer to custom.css ======= START */
-        .sidebar {
-            width: 250px;
-            min-width: 250px;
-            background: #024a70;
-            position: absolute !important;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            transition: all 0.15s ease-in-out;
-        }
-        .sidebar-close {
-            width: 0;
-            min-width: 0;
-            left: -250px;
-        }
-        .sidebar-close .menu-btn {
-            right: -300px;
-        }
-        .menu-btn {
-            display: inline-block;
-            cursor: pointer;
-            position: absolute;
-            right: -50px;
-            transition: right 0.15s ease-in-out;
-        }
-        @media (min-width: 1024px) {
-            .sidebar {
-                display: block !important;
-                background: #024a70;
-                position: unset !important;
-            }
-            .sidebar-close {
-                width: 250px !important;
-                min-width: 250px !important;
-                left: 0 !important;
-            }
-            .menu-btn {
-                display: none !important;
-            }
-        }
-        
-
-        .bar1, .bar2, .bar3 {
-            width: 35px;
-            height: 5px;
-            background-color: #333;
-            margin: 6px 0;
-            transition: 0.4s;
-        }
-
-        .change .bar1 {
-            transform: translate(0, 11px) rotate(-45deg);
-        }
-
-        .change .bar2 {opacity: 0;}
-
-        .change .bar3 {
-            transform: translate(0, -11px) rotate(45deg);
-        }
 
         /* Transfer to custom.css ======= END */
 
