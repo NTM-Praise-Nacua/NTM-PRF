@@ -23,6 +23,7 @@ class PurchaseRequisitionForm extends Model
         'urgency',
         'request_type',
         'request_details',
+        'remarks',
         'next_department',
         'assign_employee',
     ];

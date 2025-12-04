@@ -12,7 +12,7 @@
             background: #FFCDD2 !important;
         }
         .highlight-inprogress td {
-            background: #BBDEFB !important;
+            background: #69BFFF !important;
         }
         .highlight-executed td {
             background: #B2EBF2 !important;
@@ -35,7 +35,7 @@
         
         <div class="">
             @if (auth()->user()->id != 1)
-                <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end">Add Request</a>
+                <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end position-relative" style="z-index: 5;">Add Request</a>
             @endif
 
             <table id="prf-table" class="table table-striped table-hover no-wrap my-2">

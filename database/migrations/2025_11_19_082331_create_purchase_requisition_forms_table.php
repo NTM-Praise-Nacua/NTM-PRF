@@ -27,6 +27,7 @@ class CreatePurchaseRequisitionFormsTable extends Migration
             $table->string('urgency');
             $table->foreignId('request_type')->constrained('request_types', 'id');
             $table->text('request_details');
+            $table->text('remarks');
             $table->foreignId('next_department')->constrained('departments', 'id');
             $table->foreignId('assign_employee')->constrained('users', 'id');
             $table->timestamps();

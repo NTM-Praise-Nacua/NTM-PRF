@@ -46,6 +46,8 @@
             height: 20px;
             width: 20px;
         }
+
+
         .request-lists {
             height: 150px;
         }
@@ -74,7 +76,7 @@
         }
 
         .step-circle.completed, .step-line.completed {
-            background-color: #198754; /* Bootstrap success color */
+            background-color: #198754;
         }
 
         .step-circle.pending, .step-line.pending {
@@ -116,8 +118,11 @@
 @php
     $user = auth()->user();
     $counter = 0;
+    $isBetween = false;
 
+    $currentStep = null;
     $steps = [];
+
     foreach ($PRFWorkflow as $index => $item) {
         $trackerExists = isset($tracker[$index]);
         $rawSubmittedAt = $trackerExists ? $tracker[$index]['submitted_at'] : null;
@@ -125,7 +130,8 @@
         if (!$trackerExists) {
             $status = '';
         } elseif ($rawSubmittedAt === null) {
-            $status = 'pending';
+            $status = $requisition->status == 2 ? 'rejected' : 'pending';
+            $currentStep = $requisition->status == 2 ? $PRFWorkflow[$index - 1]['id'] : $item->id;
         } else {
             $status = 'completed';
         }
@@ -143,12 +149,20 @@
             'date'  => $displayDate,
             'status'=> $status,
         ];
+
+        if ($status == "pending") {
+            $isFirst = ($index == 0);
+            $isLast = ($index == count($PRFWorkflow) - 1);
+
+            if (!$isFirst && !$isLast) {
+                $isBetween = true;
+            }
+        }
     }
 
-    
-    $nextIndex = array_key_last($tracker) + 1;
+    $nextIndex = array_key_last($tracker) + ($requisition->status == 2 ? 0 : 1);
     $nextDepartment = optional($PRFWorkflow->get($nextIndex))?->toArray();
-    
+
     $nextDepId = $nextDepartment ? $nextDepartment['ordering'] : null;
 @endphp
 
@@ -158,9 +172,11 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center">
                 @foreach($steps as $index => $step)
                     <div class="d-flex align-items-center flex-grow-1 position-relative step-container">
-                        <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : '') }}">
+                        <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : ($step['status'] == 'rejected' ? 'bg-danger' : '')) }}">
                             @if($step['status'] == 'completed')
                                 &#10003;
+                            @elseif ($step['status'] == 'rejected')
+                                &#10007;
                             @else
                                 {{ $index + 1 }}
                             @endif
@@ -184,6 +200,7 @@
             @csrf
             @method('PUT')
             <h2 class="text-center">PURCHASE REQUISITION FORM</h2>
+            <input type="hidden" name="workflow_step_id" value="{{ $currentStep }}">
             <div class="row mb-3">
                 <div class="col">
                     <div class="form-floating">
@@ -354,7 +371,7 @@
                     <div class="col viewPDF"></div>
                 </div>
             </div>
-            <div class="upload-pdf-group row mb-3 {{ ($user->id == $requisition->request_by || $user->role_id == 1 || in_array($requisition->status, [0, 2, 4]) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
+            <div class="upload-pdf-group row mb-3 {{ ($user->id == $requisition->request_by || $user->role_id == 1 || in_array($requisition->status, [0, 4]) || ($requisition->status == 2 && $user->id != $requisition->assign_employee) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
                     <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" multiple>
@@ -400,6 +417,16 @@
                 </div>
             </div>
 
+            @if (($isBetween && $user->id != $requisition->request_by) || ($requisition->status == 2 && $user->id == $requisition->assign_employee))
+            <div class="mb-3">
+                <h5>Remarks <span class="fs-6 fw-normal fst-italic">(optional)</span></h5>
+                <div class="form-floating w-50" style="min-width: 300px;">
+                    <textarea id="remarks" name="remarks"  class="form-control" placeholder="Remarks" style="height: 130px"  {{ $requisition->status == 2 && $user->id == $requisition->assign_employee ? 'disabled' : '' }}>{{ $requisition->remarks }}</textarea>
+                    <label for="remarks">Remarks</label>
+                </div>
+            </div>
+            @endif
+
             <x-section-head headTitle="FOR APPROVER"></x-section-head>
 
             <h6 class="my-3">LIST OF APPROVERS</h6>
@@ -417,7 +444,10 @@
                     @if ($requisition->status == 4 && $user->id == $requisition->request_by)
                         <button type="button" class="btn btn-sm btn-success complete-btn">Complete</button>
                     @else
-                        <button type="submit" class="btn btn-sm btn-primary" {{ ( $user->id == $requisition->request_by || ($user->role_id == 1 && $requisition->assign_employee != $user->id) || in_array($requisition->status, [0, 2, 4]) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'disabled' : '' }}>Submit</button>
+                        @if ($isBetween && $user->id != $requisition->request_by)
+                            <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
+                        @endif
+                        <button type="submit" class="btn btn-sm btn-primary" {{ ($user->id == $requisition->request_by || $requisition->assign_employee != $user->id || ($requisition->assign_employee == $user->id && $requisition->status == 0)) ? 'disabled' : '' }}>Submit</button>
                     @endif
                 @endif
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
@@ -488,6 +518,8 @@
                 formData.append('_token', token);
                 formData.append('department_id', {{ $nextDepId ?? $requisition->department }});
                 formData.append('requestor_id', {{ $requisition->request_by }});
+                formData.append('requisition_id', {{ $requisition->id }});
+                console.log('request by: ', {{ $requisition->request_by }});
 
                 $.ajax({
                     url: "{{ route('requisition.employee.department') }}",
@@ -498,6 +530,9 @@
                     success: function (response) {
                         const res = JSON.parse(response);
                         const employee = res.data;
+                        const rejector = res.rejector;
+                        const formStatus = {{ $requisition->status }};
+                        console.log("rejector: ", rejector);
 
                         const empSelect = $('select[name="assign_employee"]');
                         
@@ -509,11 +544,24 @@
                         empSelect.append(hiddenOpt);
 
                         employee.forEach(item => {
-                            const opt = $('<option></option>');
-                            opt.val(item.id);
-                            opt.text(item.name);
+                            const opt = $('<option></option>', {
+                                value: item.id,
+                                text: item.name,
+                                selected: ((rejector == item.id && formStatus == 2) ? true : false)
+                            });
                             empSelect.append(opt);
                         });
+                        
+                        if (rejector && formStatus == 2) {
+                            empSelect.prop('disabled', true);
+                            const form = empSelect.closest('form');
+                            const hiddenInput = $('<input>', {
+                                type: "hidden",
+                                name: "assign_employee",
+                                value: rejector
+                            });
+                            form.append(hiddenInput);
+                        }
                     }, error: function (xhr) {
                         console.error('error: ', xhr);
                     }
@@ -544,6 +592,8 @@
                     contentType: false,
                     success: function (response) {
                         const res = JSON.parse(response);
+
+                        console.log('response: ', res);
 
                         createRequestStatusElements(res.data.departments, res.data.files);
 
@@ -651,7 +701,20 @@
             });
 
             $('.reject-btn').on('click', function() {
-                approveOrReject('Reject');
+                const isBetween = @json($isBetween);
+
+                if (isBetween) {
+                    const form = $(this).closest('form');
+                    const inputStatus = $('<input>', {
+                        hidden: true,
+                        name: "status",
+                        value: "reject",
+                    });
+                    form.append(inputStatus);
+                    form.submit();
+                } else {
+                    approveOrReject('Reject');
+                }
             });
 
             function approveOrReject(status) {

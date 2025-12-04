@@ -27,6 +27,15 @@
             width: 250px;
             min-width: 250px;
             background: #024a70;
+            display: none !important;
+        }
+        @media (min-width: 1024px) {
+            .sidebar {
+                display: block !important;
+                width: 250px;
+                min-width: 250px;
+                background: #024a70;
+            }
         }
         #usersDropdown {
             background: #033D5E;
@@ -145,43 +154,41 @@
     </div>
     @stack('js')
     <script>
-        $(function() {
-            function alertMessage(msg, status, location = "") {
-                Swal.fire({
-                    title: msg,
-                    icon: status,
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then((result) => {
-                    if (result.dismiss === Swal.DismissReason.timer && status == "success") {
-                        if (!location) {
-                            window.location.reload();
-                        } else {
-                            window.location.href = location;
-                        }
+        function alertMessage(msg, status, location = "") {
+            Swal.fire({
+                title: msg,
+                icon: status,
+                showConfirmButton: false,
+                timer: 1500
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer && status == "success") {
+                    if (!location) {
+                        window.location.reload();
+                    } else {
+                        window.location.href = location;
                     }
-                });
-            }
-
-            function viewPDF(file, container, height = '1111px') {
-                const src = file.dataset.src;
-
-                container.empty();
-                console.log('container: ', container);
-
-                const frameEl = $('<iframe></iframe>')
-                    .css({
-                        width: '100%',
-                        height: height,
-                    })
-                    .attr('src', src);
-                
-                container.append(frameEl);
-            }
-
-            $('.sidenav .navbar-brand').on('click', function() {
-                window.location.reload();
+                }
             });
+        }
+
+        function viewPDF(file, container, height = '1111px') {
+            const src = file.dataset.src;
+
+            container.empty();
+            console.log('container: ', container);
+
+            const frameEl = $('<iframe></iframe>')
+                .css({
+                    width: '100%',
+                    height: height,
+                })
+                .attr('src', src);
+            
+            container.append(frameEl);
+        }
+
+        $('.sidenav .navbar-brand').on('click', function() {
+            window.location.reload();
         });
     </script>
 </body>

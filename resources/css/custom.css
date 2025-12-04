@@ -55,9 +55,10 @@ body {
 .datepicker .next {
     border-radius: 0 0.25rem 0.25rem 0;
 }
-.sidebar {
+/* .sidebar {
     width: 100px;
     background: #024a70;
+    display: none !important;
 }
 
 @media (min-width: 1024px) {
@@ -65,4 +66,4 @@ body {
         width: 250px;
         background: #024a70;
     }
-}
+} */

@@ -11,6 +11,7 @@ class RequestFile extends Model
 
     protected $fillable = [
         'prf_id',
-        'file_id'
+        'file_id',
+        'workflow_step_id'
     ];
 }

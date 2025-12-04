@@ -15,6 +15,7 @@ use App\Services\RequestTypeService;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\DataTables;
 
@@ -125,6 +126,8 @@ class PurchaseRequisitionFormController extends Controller
                 $uploadedFile = $this->uploadFile($file);
                 $uploadedFileIds[] = $uploadedFile->id;
             }
+
+            // dd($currentWorkflowStepId);
 
             $PRF->files()->attach($uploadedFileIds);
 
@@ -291,10 +294,15 @@ class PurchaseRequisitionFormController extends Controller
     public function getEmployeeByDepartment(Request $request)
     {
         $users = User::where('department_id', $request->department_id)->where('id', '!=', $request->requestor_id)->get();
+
+        // dd($request->requisition_id);
+        $requisition = PurchaseRequisitionForm::find($request->requisition_id);
+        $latestTracker = $requisition->tracker()->latest()->first();
         
         return json_encode([
             'status' => 'success',
-            'data' => $users
+            'data' => $users,
+            'rejector' => $latestTracker?->employee_id
         ]);
     }
     /**
@@ -417,7 +425,7 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function update(Request $request, PurchaseRequisitionForm $requisition)
     {
-        // dd($request->all(), $requisition);
+        // dd($request->all());
         if (!$request->exists('assign_employee') && !$request->exists('department_id')) {
             $request->validate([
                 'upload_pdf' => 'required|array',
@@ -443,15 +451,31 @@ class PurchaseRequisitionFormController extends Controller
                 ->toArray();
             
             $requisition->files()->attach($uploadedFileIds);
+        } else if ($request->exists('status')) {
+            $remarks = $request->input('remarks', null);
+            
+            $latestTracker = $requisition->tracker()->latest()->skip(1)->first();
+
+            $requisition->status = 2;
+            $requisition->next_department = $latestTracker->department_id;
+            $requisition->assign_employee = $latestTracker->employee_id;
+            $requisition->remarks = $remarks;
+            $requisition->save();
         } else {
             $request->validate([
                 'assign_employee' => 'required',
                 'department_id' => 'required',
+                'workflow_step_id' => 'required',
                 'upload_pdf' => 'required|array',
                 'upload_pdf.*' => 'file|mimes:pdf',
             ]);
 
-            $latestTracker = $requisition->tracker()->latest()->first();
+            $skip = $requisition->status == 2 ? 1 : 0;
+
+            $latestTracker = $requisition->tracker()
+                ->latest()
+                ->skip($skip)
+                ->first();
     
             if ($latestTracker) {
                 $latestTracker->submitted_at = now();
@@ -463,23 +487,50 @@ class PurchaseRequisitionFormController extends Controller
             $requisition->assign_employee = $request->assign_employee;
             $requisition->save();
             
+            $currentWorkflowStepId = $request->workflow_step_id;
+            
+            if ($skip) {
+                $this->deleteFiles($currentWorkflowStepId);
+            } else {
+                RequisitionWorkflowTracker::create([
+                    'requisition_id' => $requisition->id,
+                    'department_id' => $request->department_id,
+                    'employee_id' => $requisition->assign_employee,
+                ]);
+            }
+
             $uploadedFileIds = collect($request->file('upload_pdf'))
                 ->map(function ($file) {
                     return $this->uploadFile($file)->id;
                 })
                 ->toArray();
             
-            $requisition->files()->attach($uploadedFileIds);
-            
-            RequisitionWorkflowTracker::create([
-                'requisition_id' => $requisition->id,
-                'department_id' => $request->department_id,
-                'employee_id' => $requisition->assign_employee,
-            ]);
+            // $requisition->files()->attach($uploadedFileIds);
+            $requisition->files()->attach(
+                collect($uploadedFileIds)->mapWithKeys(function ($fileId) use ($currentWorkflowStepId) {
+                    return [$fileId => ['workflow_step_id' => $currentWorkflowStepId]];
+                })->toArray() 
+            );
         }
         
         
         return redirect()->route("requisition.history");
+    }
+
+    public function deleteFiles($workflowStepId)
+    {
+        $uploadedFileIds = RequestFile::where('workflow_step_id', $workflowStepId)->pluck('file_id');
+
+        $uploadedFiles = UploadedFile::whereIn('id', $uploadedFileIds)->get();
+
+        foreach ($uploadedFiles as $file) {
+            if (Storage::disk('public')->exists($file->path)) {
+                Storage::disk('public')->delete($file->path);
+            }
+        }
+
+        UploadedFile::whereIn('id', $uploadedFileIds)->delete();
+        RequestFile::where('workflow_step_id', $workflowStepId)->delete();
     }
 
     public function updateStatus(Request $request)
@@ -506,13 +557,13 @@ class PurchaseRequisitionFormController extends Controller
 
         $requestorDepartment = [$requisition->departmentName->shortcut ?? 'N/A'];
 
-        $workflowDepartments = $requisition->tracker->map(function($step) {
+        $workflowDepartments = $requisition->tracker->sortBy('id')->map(function($step) {
             return $step->department->shortcut ?? 'N/A';
         })->toArray();
 
         $departments = array_merge($requestorDepartment, $workflowDepartments);
 
-        $files = $requisition->files->toArray();
+        $files = $requisition->files()->orderBy('created_at','asc')->get()->toArray();
         
         $grouped = [];
         $currentGroup = [];
