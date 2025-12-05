@@ -212,7 +212,7 @@ class PurchaseRequisitionFormController extends Controller
         return view('requisition.requisition-history');
     }
 
-    public function showPRFList()
+    public function showPRFList(Request $request)
     {
         $prfData = PurchaseRequisitionForm::with([
             'requestType',
@@ -234,6 +234,15 @@ class PurchaseRequisitionFormController extends Controller
                         $q->where('approver_id', $userId);
                     });
             });
+        }
+
+        // Column Filters
+        if ($request->status != "") {
+            $prfData->where('status', $request->status);
+        }
+
+        if ($request->date_requested) {
+            $prfData->whereDate('date_request', $request->date_requested);
         }
 
         return DataTables::of($prfData)

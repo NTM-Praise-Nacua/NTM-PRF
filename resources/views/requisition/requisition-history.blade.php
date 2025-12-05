@@ -38,6 +38,24 @@
                 <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end position-relative" style="z-index: 5;">Add Request</a>
             @endif
 
+            <div class="float-end position-relative mx-2" style="z-index: 5;">
+                <label for="filter-status" style="white-space: nowrap; text-align:left;">Status: </label>
+                <select class="form-select form-select-sm d-inline" name="filter-status" id="filter-status" style="width: auto;">
+                    <option value="" selected>All</option>
+                    <option value="0">Pending</option>
+                    <option value="1">Approved</option>
+                    <option value="2">Rejected</option>
+                    <option value="3">In Progress</option>
+                    <option value="4">Executed</option>
+                    <option value="5">Completed</option>
+                </select>
+            </div>
+
+            <div class="float-end position-relative mx-2" style="z-index: 5;">
+                <label for="filter-status" style="white-space: nowrap; text-align:left;">Date Requested: </label>
+                <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ date('Y-m-d') }}">
+            </div>
+
             <table id="prf-table" class="table table-striped table-hover no-wrap my-2">
                 <thead>
                     <tr>
@@ -66,13 +84,19 @@
 @push('js')
     <script>
         $(document).ready(function() {
-            $('#prf-table').DataTable({
+            let table = $('#prf-table').DataTable({
                 processing: true,
                 serverSide: true,
                 dom: '<"top-left"f>rtip',
                 buttons: ['colvis'],
 				scrollX: true,
-                ajax: "{{ route('requisition.list') }}",
+                ajax: {
+                    url: "{{ route('requisition.list') }}",
+                    data: function (d) {
+                        d.status = $('#filter-status').val();
+                        d.date_requested = $('#filter-date_requested').val();
+                    }
+                },
                 columns: [
                     {data: 'DT_RowIndex', orderable: false, searchable: false},
                     {data: 'request_type'},
@@ -138,6 +162,10 @@
                     var cell12 = $('td:eq(12)', row).css('padding', '15px');
                     var cell13 = $('td:eq(13)', row).css('padding', '15px');
                 }
+            });
+
+            $('#filter-status, #filter-date_requested').on('change', function () {
+                table.draw();
             });
         });
     </script>
