@@ -12,6 +12,9 @@
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <!-- Fonts -->
     {{-- <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet"> --}}
@@ -24,7 +27,14 @@
 
     <style>
         /* Transfer to custom.css ======= START */
-
+        .btn-utility {
+            font-size: 14px;
+            font-family: 'Times New Roman', Times, serif;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            height: 30px;
+            box-sizing: border-box;
+        }
         /* Transfer to custom.css ======= END */
 
         #usersDropdown {
@@ -51,11 +61,11 @@
         .tab-link {
             color: white;
         }
-        .tab-link:not(.active-current):hover {
-            opacity: 0.75;
-            background: #617580;
-        }
-        .active-current, .sidenav {
+        /* .tab-link:not(.active-current):hover {
+            opacity: .5;
+            background: #005380;
+        } */
+        .active-current, .sidenav, .tab-link:not(.active-current):hover {
             background: #00598a !important;
         }
         .active-current:hover, {
@@ -155,16 +165,78 @@
             const src = file.dataset.src;
 
             container.empty();
-            console.log('container: ', container);
 
             const frameEl = $('<iframe></iframe>')
                 .css({
                     width: '100%',
                     height: height,
+                    border: '1px solid gray'
                 })
-                .attr('src', src);
+                .attr({
+                    src: src
+                });
             
-            container.append(frameEl);
+            const frameWrapper = $('<div></div>', {
+                class: 'frameWrapper position-relative border'
+            });
+            
+            container.append(frameWrapper.append(frameEl));
+        }
+
+        function editPDF(container) {
+            container.empty();
+            const buttonWrapper = $('<div id="pdf-utilities"></div>')
+                .css({
+                    padding: '0.5rem',
+                    background: '#262626',
+                    gap: '5px',
+                    display: 'flex',
+                    position: 'sticky',
+                    top: '0',
+                });
+            const saveBtn = $('<button></button>', {
+                id: 'submit-edit',
+                class: 'btn-utility',
+                text: 'save',
+                type: 'button',
+            });
+            const addTextBtn = $('<button></button>', {
+                id: 'add-text',
+                class: "btn-utility",
+                text: 'T',
+                type: 'button',
+            });
+            const decBtn = $('<button></button>', {
+                id: 'decrease',
+                class: "btn-utility",
+                text: 'a',
+                type: 'button',
+            });
+            const incBtn = $('<button></button>', {
+                id: 'increase',
+                class: "btn-utility",
+                text: 'A',
+                type: 'button',
+            });
+            buttonWrapper.append(saveBtn, addTextBtn, decBtn, incBtn);
+
+            const pdfWrapper = $('<div></div>', {
+                id: 'pdf-wrapper',
+            }).css({
+                border: '1px solid black',
+                width: '100%',
+                overflow: 'auto',
+            });
+            const pdfContainer = $('<div></div>', {
+                id: 'pdf-container',
+            }).css({
+                position: 'relative',
+                display: 'inline-block',
+            });
+
+            const pdfCanvas = $('<canvas id="pdf-canvas"></canvas>');
+
+            container.append(buttonWrapper, pdfWrapper.append(pdfContainer.append(pdfCanvas)));
         }
 
         $('.sidenav .navbar-brand').on('click', function() {

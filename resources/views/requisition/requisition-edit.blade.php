@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @push('css')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
     <style>
         .connector {
             height: 5px;
@@ -95,6 +96,13 @@
             width: 58%
         }
 
+        input[name="textPDFInput[]"]::placeholder {
+            color: black;
+        }
+        input[name="textPDFInput[]"]:focus {
+            border: 1px solid black !important;
+        }
+
         @media (max-width: 768px) {
             .d-flex.flex-wrap.justify-content-between {
                 flex-direction: column;
@@ -112,11 +120,15 @@
                 margin-bottom: 2rem;
             }
         }
+
+        .draggable-input {
+            border: none;
+            outline: none;
+        }
     </style>
 @endpush
 
 @php
-
     $user = auth()->user();
     $counter = 0;
     $isBetween = false;
@@ -363,7 +375,7 @@
                         <div class="attachment-list p-1d-flex flex-column flex-wrap gap-2" style="max-height: 100px">
                             @forelse ($attachments as $attachment)
                                 <div>
-                                    <a href="javascript:void(0);" data-src="{{ asset('storage/'. $attachment->path) }}">{{ $attachment->original_name }}</a>
+                                    <a href="javascript:void(0);" data-src="{{ asset('storage/'. $attachment->path) }}" data-storedname="{{ $attachment->stored_name }}">{{ $attachment->original_name }}</a>
                                 </div>
                             @empty
                                 No attachments...
@@ -489,6 +501,13 @@
 @push('js')
     <script>
         $(document).ready(function(){
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.worker.min.js';
+            
+            // let url = '';
+            let linkSrc = '';
+            let inputSelect = null;
+            let scale = 1;
+            
             $('.complete-btn').on('click', function() {
                 const token = $('meta[name="csrf-token"]').attr('content');
                 const formData = new FormData();
@@ -659,6 +678,9 @@
 
             $('.attachment-list a').on('click', function(e) {
                 const linkEl = e.currentTarget;
+                const url = linkEl.dataset.src;
+                linkSrc = linkEl.dataset.storedname;
+                
                 const linkName = linkEl.innerText;
                 const modalLabel = $('#requestorViewAttachLabel');
                 const modalViewAttach = $('#requestorViewAttach .modal-body');
@@ -668,8 +690,333 @@
                 const modal = new bootstrap.Modal(modalEl);
                 modal.show();
 
-                viewPDF(linkEl, modalViewAttach, '800px');
+                const requestStatus = {{ $requisition->status }};
+                const userId = {{ $user->id }};
+                const requestBy = {{ $requisition->request_by }};
+                console.log("requestStatus: ", requestStatus);
+                console.log("userID: ", userId);
+                console.log("requestBy: ", requestBy);
+
+                if (requestStatus == 0 && userId == requestBy) {
+                    editPDF(modalViewAttach);
+
+                    pdfjsLib.getDocument(url).promise.then((pdf) => {
+                        pdf.getPage(1).then(page => {
+                            window.realPdfWidth = page.view[2];
+                            window.realPdfHeight = page.view[3];
+
+                            scale = 1.5;
+                            const viewport = page.getViewport({scale});
+                            const canvas = document.getElementById('pdf-canvas');
+                            const context = canvas.getContext('2d');
+                            
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            
+                            page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
+                                enableClickMarkers(canvas, context, scale);
+                            });
+                        });
+                    });
+                } else {
+                    viewPDF(linkEl, modalViewAttach, '800px');
+                }
             });
+
+            // ====== FOR CUSTOM EDIT PDF =======start
+            function enableClickMarkers(canvas, ctx, scale) {
+                $(document).on("click", "#pdf-canvas", function(e){
+                    const cursor = $(this).css('cursor');
+
+                    if (cursor == "auto") return;
+
+                    const rect = canvas.getBoundingClientRect();
+
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+
+                    const x_canvas = (e.clientX - rect.left) * scaleX;
+                    const y_canvas = (e.clientY - rect.top) * scaleY;
+
+                    const x_unscaled = x_canvas / scale;
+                    const y_unscaled = y_canvas / scale;
+                    
+                    const x_fpdi = x_unscaled;
+                    const y_fpdi = y_unscaled;
+
+                    $('.draggable-input').each(function() {
+                        if ($(this).val().trim() === '') {
+                            $(this).remove();
+                        }
+                    });
+
+                    const container = $('#pdf-container');
+
+                    const input = $('<input type="text">')
+                        .attr({
+                            "data-posX": x_fpdi,
+                            "data-posY": y_fpdi,
+                        })
+                        .addClass('draggable-input')
+                        .css({
+                            position: 'absolute',
+                            left: x_canvas + 'px',
+                            top: (y_canvas - 12) + 'px',
+                            width: '3px',
+                            minHeight: '25.02px',
+                            zIndex: 10,
+                            background: 'transparent',
+                            fontSize: "12px",
+                            outline: "1px dashed black",
+                            whiteSpace: "nowrap",
+                            overflow: "auto",
+                        });
+
+                    input.on('focus', function() {
+                        inputSelect = input;
+                    });
+
+                    container.append(input);
+                    input.focus();
+
+                    input.on('input', function() {
+                        this.style.width = '3px';
+
+                        this.style.width = this.scrollWidth + 'px';
+                    });
+
+                    let isDragging = false;
+                    let offsetX = 0;
+                    let offsetY = 0;
+
+                    input.on('mousedown', function (e) {
+                        isDragging = true;
+
+                        const inputLeft = parseFloat(input.css('left'));
+                        const inputTop  = parseFloat(input.css('top'));
+
+                        offsetX = e.clientX - inputLeft;
+                        offsetY = e.clientY - inputTop;
+                    });
+
+                    $(document).on('mousemove', function (e) {
+                        if (!isDragging) return;
+
+                        const containerRect = container[0].getBoundingClientRect();
+                        const inputWidth = input.outerWidth();
+                        const inputHeight = input.outerHeight();
+                        const inputFontSize = input[0].style.fontSize;
+
+                        let newLeft = e.clientX - offsetX;
+                        let newTop  = e.clientY - offsetY;
+
+                        newLeft = Math.max(0, Math.min(newLeft, containerRect.width - inputWidth));
+                        newTop = Math.max(0, Math.min(newTop, containerRect.height - inputHeight));
+
+                        input.css({
+                            left: newLeft + 'px',
+                            top:  newTop + 'px'
+                        });
+
+                        const canvas = $('#pdf-canvas')[0];
+                        const rect = canvas.getBoundingClientRect();
+
+                        const scaleX = canvas.width / rect.width;
+                        const scaleY = canvas.height / rect.height;
+
+                        const x_canvas = (newLeft / container.width() * rect.width) * scaleX;
+                        const y_canvas = ((newTop + parseFloat(inputFontSize)) / container.height() * rect.height) * scaleY; // add back your visual -12px
+
+                        const x_unscaled = x_canvas / scale;
+                        const y_unscaled = y_canvas / scale;
+
+                        const x_fpdi = x_unscaled;
+                        const y_fpdi = y_unscaled;
+
+                        input.attr({
+                            'data-posX': x_fpdi,
+                            'data-posY': y_fpdi
+                        });
+                    });
+
+                    $(document).on('mouseup', function () {
+                        isDragging = false;
+                    });
+                });
+            }
+
+            // Send to backend
+            $(document).on("click", "#submit-edit", function(){
+                const draggableInputs = $('.draggable-input');
+                const positions = $('.draggable-input').map(function() {
+                    return {
+                        posX: parseFloat($(this).attr('data-posX')),
+                        posY: parseFloat($(this).attr('data-posY')),
+                        text: $(this).val(),
+                        fontSize: parseFloat($(this).css('font-size'))
+                    }
+                }).get();
+
+                fetch("/save-pdf", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        link: linkSrc,
+                        positions: positions
+                    })
+                })
+                .then(r=>r.json())
+                .then(data=>{
+                    if (data.status == 'success') {
+                        window.location.reload();
+                    }
+                });
+            });
+
+            $(document).on('click', '#add-text', function() {
+                $(this).toggleClass('active');
+
+                enableAddText();
+            });
+
+            function enableAddText() {
+                const cursor = $('#pdf-canvas').css("cursor");
+                if (cursor === "text") {
+                    $('#pdf-canvas').css('cursor', 'auto');
+                } else {
+                    $('#pdf-canvas').css('cursor', 'text');
+                }
+            }
+            
+            function updateInputSize(increase, e = null) {
+                if (!inputSelect) return;
+                
+                let fontSize = parseFloat(inputSelect.css('fontSize'));
+                fontSize = increase ? fontSize + 2 : Math.max(8, fontSize - 2);
+                inputSelect.css('fontSize', `${fontSize}px`);
+                inputSelect[0].style.width = "3px";
+                
+                const width = inputSelect[0].scrollWidth;
+
+                inputSelect.css('width', `${width}px`);
+
+                inputSelect.blur();
+                
+                recalculatePdfCoords(inputSelect);
+            }
+
+            $(document).on('click', '#increase', function(e) {
+                updateInputSize(true, e);
+            });
+
+            $(document).on('click', '#decrease', function() {
+                updateInputSize(false);
+            });
+
+            function recalculatePdfCoords(input) {
+                const container = $('#pdf-container');
+                const canvas = $('#pdf-canvas')[0];
+                const rect = canvas.getBoundingClientRect();
+
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+
+                const left = parseFloat(input.css('left'));
+                const top  = parseFloat(input.css('top'));
+
+                const x_canvas = (left / container.width() * rect.width) * scaleX;
+                const y_canvas = ((top + parseFloat(input.css('fontSize'))) / container.height() * rect.height) * scaleY;
+
+                const x_unscaled = x_canvas / scale;
+                const y_unscaled = y_canvas / scale;
+
+                input.attr({
+                    "data-posX": x_unscaled,
+                    "data-posY": y_unscaled
+                });
+            }
+            // ====== FOR CUSTOM EDIT PDF =======end
+
+            $(document).on('click', '.addTextBtn', function() {
+                const modalViewAttach = $('#requestorViewAttach .modal-body .frameWrapper');
+
+                console.log('framewrapper: ', modalViewAttach);
+
+                const textInput = $('<input>', {
+                        name: 'textPDFInput[]',
+                        placeholder: 'Input some text...',
+                        class: "textPDFInput",
+                        autocomplete: false,
+                    })
+                    .css({
+                        width: "100%",
+                        background: "transparent",
+                        border: "1px dashed",
+                    });
+                const $textInputWrapper = $('<div></div>', {
+                        class: "addTextWrapper"
+                    })
+                    .css({
+                        position: "absolute",
+                        top: "40px",
+                        left: "0",
+                        'z-index': "100",
+                        width: "100px",
+                        display: "flex",
+                        'justify-content': "end",
+                        'outline': 'none',
+                    });
+                
+                modalViewAttach.append($textInputWrapper.append(textInput));
+                
+                var $hiddenX = $('<input type="hidden" class="pos_x">');
+                var $hiddenY = $('<input type="hidden" class="pos_y">');
+                modalViewAttach.append($hiddenX).append($hiddenY);
+
+                makeDraggable($textInputWrapper, $hiddenX, $hiddenY);
+            });
+
+            $(document).on('change', '.textPDFInput', function (e) {
+                if ($(this).val() != "") {
+                    $(this).css('border', 'none');
+                }
+            });
+
+            // draggable --start
+            function makeDraggable($box, $hiddenX, $hiddenY) {
+                var isDragging = false;
+                var offsetX = 0, offsetY = 0;
+
+                $box.mousedown(function(e) {
+                    isDragging = true;
+                    offsetX = e.pageX - $box.position().left;
+                    offsetY = e.pageY - $box.position().top;
+                    $box.css("cursor", "grabbing");
+                });
+
+                $(document).mousemove(function(e) {
+                    if (!isDragging) return;
+
+                    var x = e.pageX - offsetX;
+                    var y = e.pageY - offsetY;
+
+                    $box.css({ left: x + "px", top: y + "px" });
+
+                    // Update hidden fields
+                    $hiddenX.val(x);
+                    $hiddenY.val(y);
+                });
+
+                $(document).mouseup(function() {
+                    isDragging = false;
+                    $box.css("cursor", "move");
+                });
+            }
+
+            // draggable --end
 
             $(document).on('click', '.attachment-item', function(e) {
                 e.preventDefault();

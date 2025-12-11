@@ -6,6 +6,7 @@ use App\Http\Controllers\PurchaseRequisitionFormController;
 use App\Http\Controllers\RequestTypeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PdfController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -72,4 +73,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/request/add', [RequestTypeController::class, 'store'])->name('add.request.type');
 
     Route::post('/role/create', [RoleController::class, 'store'])->name('role.create');
+    Route::post('/save-pdf', [PdfController::class, 'modifyPdf'])->name('pdf.modify');
 });
+// Route::get('/test', [PdfController::class, 'index']);

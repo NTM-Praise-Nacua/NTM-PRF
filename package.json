@@ -26,6 +26,7 @@
         "bootstrap-datepicker": "^1.10.1",
         "datatables.net": "^2.3.5",
         "datatables.net-bs5": "^2.3.5",
+        "pdf-lib": "^1.17.1",
         "sweetalert2": "^11.26.3"
     }
 }
