@@ -56,6 +56,15 @@
                 <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ date('Y-m-d') }}">
             </div>
 
+            @if (auth()->user()->id != 1)
+                <div class="float-end position-relative mx-2" style="z-index: 5;">
+                    <select class="form-select form-select-sm d-inline" name="filter-formsby" id="filter-formsby">
+                        <option value="0">My PRF</option>
+                        <option value="1">Others</option>
+                    </select>
+                </div>
+            @endif
+
             <table id="prf-table" class="table table-striped table-hover no-wrap my-2">
                 <thead>
                     <tr>
@@ -95,6 +104,7 @@
                     data: function (d) {
                         d.status = $('#filter-status').val();
                         d.date_requested = $('#filter-date_requested').val();
+                        d.forms_by = $('#filter-formsby').val();
                     }
                 },
                 columns: [
@@ -164,7 +174,7 @@
                 }
             });
 
-            $('#filter-status, #filter-date_requested').on('change', function () {
+            $('#filter-status, #filter-date_requested, #filter-formsby').on('change', function () {
                 table.draw();
             });
         });

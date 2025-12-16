@@ -184,7 +184,7 @@
         <div class="container my-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center">
                 @foreach($steps as $index => $step)
-                    <div class="d-flex align-items-center flex-grow-1 position-relative step-container">
+                    <div class="col d-flex align-items-center flex-grow-1 position-relative step-container">
                         <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : ($step['status'] == 'rejected' ? 'bg-danger' : '')) }}">
                             @if($step['status'] == 'completed')
                                 &#10003;
@@ -197,7 +197,7 @@
 
                         <div>
                             <div class="fw-bold">{{ $step['name'] }}</div>
-                            <small class="text-muted">{{ $step['date'] }}</small>
+                            <small class="text-muted" style="">{{ $step['date'] }}</small>
                         </div>
 
                         @if(!$loop->last)
@@ -693,9 +693,6 @@
                 const requestStatus = {{ $requisition->status }};
                 const userId = {{ $user->id }};
                 const requestBy = {{ $requisition->request_by }};
-                console.log("requestStatus: ", requestStatus);
-                console.log("userID: ", userId);
-                console.log("requestBy: ", requestBy);
 
                 if (requestStatus == 0 && userId == requestBy) {
                     editPDF(modalViewAttach);

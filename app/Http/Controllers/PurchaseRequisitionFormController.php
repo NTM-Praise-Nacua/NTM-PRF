@@ -228,12 +228,16 @@ class PurchaseRequisitionFormController extends Controller
 
         if (auth()->user()->role_id != 1) {
             $userId = auth()->user()->id;
-            $prfData->where(function ($query) use ($userId) {
-                $query->where('request_by', $userId)
-                    ->orWhere('assign_employee', $userId)
-                    ->orWhereHas('requestBy', function ($q) use ($userId) { 
-                        $q->where('approver_id', $userId);
-                    });
+            $prfData->where(function ($query) use ($userId, $request) {
+
+                if ($request->forms_by == "0") {
+                    $query->where('request_by', $userId);
+                } else {
+                    $query->where('assign_employee', $userId)
+                        ->orWhereHas('requestBy', function ($q) use ($userId) { 
+                            $q->where('approver_id', $userId);
+                        });
+                }
             });
         }
 
@@ -246,6 +250,8 @@ class PurchaseRequisitionFormController extends Controller
             // $prfData->whereDate('date_request', $request->date_requested);
             $prfData->whereBetween('date_request', [$request->date_requested, Carbon::today()]);
         }
+
+         
 
         return DataTables::of($prfData)
             ->addIndexColumn()
