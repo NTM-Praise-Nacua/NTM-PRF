@@ -52,7 +52,7 @@
             </div>
 
             <div class="float-end position-relative mx-2" style="z-index: 5;">
-                <label for="filter-status" style="white-space: nowrap; text-align:left;">Date Requested: </label>
+                <label for="filter-status" style="white-space: nowrap; text-align:left;">Date Requested From: </label>
                 <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ date('Y-m-d') }}">
             </div>
 

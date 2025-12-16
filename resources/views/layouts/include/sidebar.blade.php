@@ -12,12 +12,21 @@
         route('position.list'),
     ]);
 
+    $isRequisition = in_array(url()->current(), [
+        route('requisition.form'),
+        request()->routeIs('requisition.edit'),
+    ]);
+
     $user = auth()->user();
 @endphp
 
 <div class="nav nav-pills d-flex flex-column p-2 gap-2">
-    <a href="{{ route('home') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('home') ? 'active-current' : '' }}">
+    <a href="{{ route('home') }}" class="d-flex justify-content-between align-items-center fs-5 tab-link nav-link text-white {{ url()->current() == route('home') ? 'active-current' : '' }}"
+        >
         Dashboard
+        @if ($sidebarCounters > 0)
+            <span class="bg-danger rounded-circle d-flex justify-content-center align-items-center" style="font-size: 12px; width: 20px; height: 20px;">{{ $sidebarCounters }}</span>
+        @endif
     </a>
     @if($user->role_id == 1 && $user->id == 1)
     <a href="{{ route('approval.setup') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('approval.setup') ? 'active-current' : '' }}">
@@ -48,8 +57,11 @@
     </div>
     @endif
 
-    <a href="{{ route('requisition.history') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.history') ? 'active-current' : '' }}">
+    <a href="{{ route('requisition.history') }}" class="d-flex justify-content-between align-items-center fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.history') || $isRequisition ? 'active-current' : '' }}">
         Purchase Requisition
+        @if ($requisitionCounter > 0)
+            <span class="bg-danger rounded-circle d-flex justify-content-center align-items-center" style="font-size: 12px; width: 20px; height: 20px;">{{ $requisitionCounter }}</span>
+        @endif
     </a>
     {{-- <a href="{{ route('requisition.history') }}" class="fs-5 tab-link nav-link text-white {{ url()->current() == route('requisition.history') ? 'active-current' : '' }}">
         PRF History

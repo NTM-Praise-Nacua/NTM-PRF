@@ -64,6 +64,9 @@
         .bg-executed {
             background: #00BCD4 !important
         }
+        .bg-forapproval {
+            background: #ff9248;
+        }
         #monthYear {
             width: 200px !important;
         }
@@ -85,10 +88,6 @@
 
 @section('content')
     <x-container :pageTitle="$formatted">
-        {{-- <div class="mt-2">
-            <label for="monthYear" class="form-label">Select Month & Year</label>
-            <input type="text" class="form-control" id="monthYear" name="month_year">
-        </div> --}}
         <div class="date my-2">
             <input type="text" class="form-control" id="monthYear" name="month_year" placeholder="Pick a Month" autocomplete="off">
             <div class="input-group-addon">
@@ -149,6 +148,17 @@
                     <p class="fs-6 {{ $isAdmin ? "" : "mb-0" }}">Total</p>
                     <span>
                     <p class="fs-1">{{ $counters['total'] }}</p>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="row mx-0 mt-3 gap-3">
+            <div class="info-card card shadow bg-forapproval bg-gradient border-0">
+                <div class="card-body fw-bold text-center">
+                    <p class="fs-6">For Approval</p>
+                    <span>
+                        <p class="fs-1">{{ $counters['forApproval'] }}</p>
                     </span>
                 </div>
             </div>

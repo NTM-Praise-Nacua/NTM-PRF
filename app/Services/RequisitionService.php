@@ -50,9 +50,14 @@ class RequisitionService
       ->when($userRole != 1, fn($q) => $q->where('request_by', $userId))
       ->count();
 
+    $forApproval = PurchaseRequisitionForm::where('status', 0)
+      ->whereBetween('created_at', [$start, $end])
+      ->whereHas('requestBy', fn($q) => $q->where('approver_id', $userId))
+      ->count();
+
     $total = $pending + $approved + $rejected + $inProgress + $executed + $completed;
 
-    return compact('pending', 'approved', 'rejected', 'inProgress', 'executed', 'completed', 'total');
+    return compact('pending', 'approved', 'rejected', 'inProgress', 'executed', 'completed', 'total', 'forApproval');
   }
 }
 

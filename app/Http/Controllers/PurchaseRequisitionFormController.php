@@ -12,6 +12,7 @@ use App\Models\RequisitionWorkflowTracker;
 use App\Models\UploadedFile;
 use App\Models\User;
 use App\Services\RequestTypeService;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -242,7 +243,8 @@ class PurchaseRequisitionFormController extends Controller
         }
 
         if ($request->date_requested) {
-            $prfData->whereDate('date_request', $request->date_requested);
+            // $prfData->whereDate('date_request', $request->date_requested);
+            $prfData->whereBetween('date_request', [$request->date_requested, Carbon::today()]);
         }
 
         return DataTables::of($prfData)
