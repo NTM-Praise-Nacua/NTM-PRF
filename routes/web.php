@@ -36,6 +36,7 @@ Route::group(['middleware' => 'auth'], function() {
     
     Route::post('/prf-flow/getDataFlow', [PurchaseRequisitionFormController::class, 'getTypeFlow'])->name('type.flow');
     Route::post('/pdf/getList', [PurchaseRequisitionFormController::class, 'getPDFFiles'])->name('type.pdf.get');
+    Route::post('/request-type/delete', [PurchaseRequisitionFormController::class, 'deleteRequestType'])->name('type.delete');
 
     Route::get('/requisition/form', [PurchaseRequisitionFormController::class, 'showForm'])->name('requisition.form');
     Route::post('/requisition/form', [PurchaseRequisitionFormController::class, 'savePRF'])->name('requisition.form.add');

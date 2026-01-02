@@ -144,19 +144,65 @@
     </div>
     @stack('js')
     <script>
-        function alertMessage(msg, status, location = "") {
-            Swal.fire({
-                title: msg,
-                icon: status,
-                showConfirmButton: false,
-                timer: 1500
-            }).then((result) => {
-                if (result.dismiss === Swal.DismissReason.timer && status == "success") {
-                    if (!location) {
-                        window.location.reload();
-                    } else {
-                        window.location.href = location;
+        function alertMessage(msg, status, location = "", confirm = false, id = null) {
+            if (!confirm) {
+                Swal.fire({
+                    title: msg,
+                    icon: status,
+                    showConfirmButton: confirm,
+                    timer: 1500
+                }).then((result) => {
+                    if (result.dismiss === Swal.DismissReason.timer && status == "success") {
+                        if (!location) {
+                            window.location.reload();
+                        } else {
+                            window.location.href = location;
+                        }
                     }
+                });
+            } else {
+                Swal.fire({
+                    title: msg,
+                    icon: status,
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteType(id);
+                    }
+                });
+            }
+        }
+
+        function confirmMessage(id) {
+            alertMessage("Are you sure?", 'warning', '', true, id);
+        }
+
+        function deleteType(id) {
+            const token = $('meta[name="csrf-token"]').attr('content');
+            const formData = new FormData();
+            formData.append('type_id', id);
+            formData.append('_token', token);
+
+            $.ajax({
+                url: '{{ route("type.delete") }}',
+                type: "POST", 
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    const res = JSON.parse(response);
+
+                    if (res.status == 'success') {
+                        alertMessage('Deleted', 'success')
+                    }
+                },
+                error: function(xhr, error) {
+                    alertMessage("Something went wrong!", "error");
+                    console.error('error: ', xhr);
+                    console.error('error: ', error);
                 }
             });
         }

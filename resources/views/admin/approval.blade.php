@@ -85,7 +85,7 @@
 
         <div class="row p-3 ">
             <div class="col-3 card-selector-wrapper">
-                <div class="card pt-3 px-2 pb-1 mb-2 request-card">
+                <div class="card pt-3 px-2 pb-1 mb-2 request-card position-relative">
                     <h5 class="card-title">Request Type</h5>
                     <div class="card-body px-0 pb-1">
                         <select name="request_type" id="request_type" class="form-select mb-2">
@@ -93,7 +93,7 @@
                             @forelse ($requestTypes as $type)
                                 <option value="{{ $type->id }}">{{ $type->name }}</option>
                             @empty
-                                <option value="">No Request Types Found</option>
+                                <option value="" disabled>No Request Types Found</option>
                             @endforelse
                         </select>
                         <button type="button" class="btn btn-sm btn-primary" id="addOrdering">
@@ -224,7 +224,21 @@
             $('.submit-ordering').remove();
             fetchDataFlow($(this).val());
             fetchPDF($(this).val());
+            addDeleteButton($(this).val());
         });
+
+        function addDeleteButton(id) {
+            const requestCard = $(".request-card");
+            $('#btn-delete').remove();
+            const deleteButton = $('<button></button>', {
+                type: "button",
+                text: "Delete",
+                class: "btn btn-sm btn-danger position-absolute top-0 end-0 me-2 mt-2",
+                id: "btn-delete",
+                click: () => confirmMessage(id)
+            });
+            requestCard.append(deleteButton);
+        }
 
         function fetchPDF(id) {
             const token = $('meta[name="csrf-token"]').attr('content');
