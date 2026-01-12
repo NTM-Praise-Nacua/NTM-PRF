@@ -32,7 +32,6 @@
 
 @section('content')
     <x-container pageTitle="PRF History">
-        
         <div class="">
             @if (auth()->user()->id != 1)
                 <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end position-relative" style="z-index: 5;">Add Request</a>
@@ -53,14 +52,14 @@
 
             <div class="float-end position-relative mx-2" style="z-index: 5;">
                 <label for="filter-status" style="white-space: nowrap; text-align:left;">Date Requested From: </label>
-                <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ date('Y-m-d') }}">
+                <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ now()->startOfMonth()->format('Y-m-d') }}">
             </div>
 
             @if (auth()->user()->id != 1)
                 <div class="float-end position-relative mx-2" style="z-index: 5;">
                     <select class="form-select form-select-sm d-inline" name="filter-formsby" id="filter-formsby">
-                        <option value="0">My PRF</option>
                         <option value="1">Others</option>
+                        <option value="0">My PRF</option>
                     </select>
                 </div>
             @endif
@@ -175,8 +174,186 @@
             });
 
             $('#filter-status, #filter-date_requested, #filter-formsby').on('change', function () {
-                table.draw();
+                tableDraw();
             });
+
+            function tableDraw() {
+                table.draw();
+            }
+
+            $(document).on('click', '.btn-assign', function() {
+                const requisitionId = $(this).data('requisition-id')
+                const userId = @json(auth()->user()->id);
+                assignEmployee(userId, requisitionId);
+            });
+
+            $(document).on('click', '.btn-assignto', async function() {
+                const requisitionId = $(this).data('requisition-id');
+
+                const parentEl = $(this).parent();
+                parentEl.css({
+                    position: 'relative',
+                });
+
+                $(this).css('display', 'none');
+
+                // xmark button
+                const btnXWrapper = $('<div></div>')
+                .css({
+                    width: 20,
+                    height: 20,
+                    padding: 0,
+                    background: 'white',
+                    position: 'absolute',
+                    top: 2,
+                    left: 2,
+                    border: "1px solid lightgray",
+                    textAlign: "center",
+                    display: 'inline-block',
+                    lineHeight: 0.85,
+                    borderRadius: '50%'
+                });
+                const closeBtn = $('<a></a>', {
+                    href: 'javascript:void(0);',
+                    class: 'close-btn',
+                    html: '&times;'
+                })
+                .css({
+                    textDecoration: 'none',
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: 'red'
+                });
+                btnXWrapper.append(closeBtn);
+
+                // checkmark button
+                const btnCheckWrapper = $('<div></div>')
+                .css({
+                    width: 20,
+                    height: 20,
+                    padding: 0,
+                    background: 'white',
+                    position: 'absolute',
+                    top: 2,
+                    right: 2,
+                    border: "1px solid lightgray",
+                    textAlign: "center",
+                    display: 'inline-block',
+                    lineHeight: 0.85,
+                    borderRadius: '50%'
+                });
+                const checkBtn = $('<a></a>', {
+                    href: 'javascript:void(0);',
+                    class: 'check-btn',
+                    html: '&check;',
+                    "data-prfid": requisitionId,
+                })
+                .css({
+                    textDecoration: 'none',
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    color: 'green',
+                    lineHeight: 1.45
+                });
+                btnCheckWrapper.append(checkBtn);
+
+                const selectEl = $('<select></select', {
+                    class: 'form-select',
+                    name: 'assignto'
+                });
+                
+                const users = await getDepartmentMembers(requisitionId);
+                const hiddenOpt = $('<option></option>', {
+                    text: 'Assign EE',
+                    selected: true,
+                    hidden: true,
+                    value: '',
+                });
+                const selfOpt = $('<option></option>', {
+                    text: 'Assign to Self',
+                    value: @json(auth()->user()->id)
+                });
+                selectEl.append(hiddenOpt, selfOpt);
+
+                users.forEach(user => {
+                    const opt = $('<option></option>', {
+                        text: user.first_name + " " + user.last_name.toUpperCase().slice(0,1),
+                        value: user.id,
+                    });
+                    selectEl.append(opt);
+                });
+
+                parentEl.append(btnXWrapper, btnCheckWrapper, selectEl);
+            });
+
+            async function getDepartmentMembers(requisitionId) {
+                return new Promise((resolve, reject) => {
+                    const token = $('meta[name="csrf-token"]').attr('content');
+                    const formData = new FormData();
+                    formData.append('_token', token);
+                    formData.append('requisition_id', requisitionId);
+                    
+                    $.ajax({
+                        url: "{{ route('department.getMembers') }}",
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            const res = JSON.parse(response);
+                            resolve(res.users);
+                        },
+                        error: function (xhr) {
+                            reject('error: ', xhr.responseText);
+                        }
+                    })
+                })
+            }
+
+            $(document).on('click', '.close-btn', function() {
+                const parentEl = $(this).closest('td');
+                const selectEl = parentEl.find('select[name="assignto"]');
+                selectEl.remove();
+
+                const btnAssign = $('.btn-assignto');
+                btnAssign.css('display', 'inline-block');
+                $(this).parent().remove();
+            });
+
+            $(document).on('click', '.check-btn', function() {
+                const select = $(this).closest('td').find('select[name="assignto"]');
+                if (select.val() == "") {
+                    alertMessage('Please Select Employee', 'warning')
+                } else {
+                    assignEmployee(select.val(), $(this).data('prfid'));
+                }
+            });
+
+            function assignEmployee(empId, prfId) {
+                const token = $('meta[name="csrf-token"]').attr('content');
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('user_id', empId);
+                formData.append('prf_id', prfId);
+
+                $.ajax({
+                    url: "{{ route('requisition.assign') }}",
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        const res = JSON.parse(response);
+
+                        alertMessage('Assigned Succesfully', 'success', '', false, null, true);
+                        setTimeout(() => {
+                            tableDraw();
+                        }, 1500);
+                    }, error: function (xhr) {
+                        console.error('error: ', xhr);
+                    }
+                });
+            }
         });
     </script>
 @endpush

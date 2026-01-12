@@ -49,6 +49,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::put('/requisition/{requisition}/update', [PurchaseRequisitionFormController::class, 'update'])->name('requisition.form.update');
     Route::post('/requisition/status/update', [PurchaseRequisitionFormController::class, 'updateStatus'])->name('requisition.status.update');
     Route::post('/requisition/request/status', [PurchaseRequisitionFormController::class, 'getRequestStatus'])->name('requisition.request.status');
+    Route::post('/requisition/assign', [PurchaseRequisitionFormController::class, 'assignEmployee'])->name('requisition.assign');
     
     Route::get('/users', [UserController::class, 'index'])->name('user.list');
     Route::get('/users/data', [UserController::class, 'getUsersData'])->name('users.data');
@@ -64,6 +65,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/department/detail', [DepartmentController::class, 'getDepartmentInfo'])->name('department.details.get');
     Route::post('/department/add', [DepartmentController::class, 'store'])->name('department.add');
     Route::post('/department/update', [DepartmentController::class, 'update'])->name('department.update');
+    Route::post('/department/members', [DepartmentController::class, 'getMembers'])->name('department.getMembers');
     
     Route::get('/position', [PositionController::class, 'index'])->name('position.list');
     Route::get('/position/data', [PositionController::class, 'getPositionData'])->name('position.data');

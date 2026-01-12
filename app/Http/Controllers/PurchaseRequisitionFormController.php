@@ -39,6 +39,28 @@ class PurchaseRequisitionFormController extends Controller
         $departments = Department::where('isActive', 1)->get()->toArray();
         $requestTypes = $this->requestType->getRequestType();
 
+        $additionalOptions = [
+            [
+                "id" => -2,
+                "name" => "Requestor",
+                "shortcut" => "Requestor",
+                "created_by" => null,
+                "isActive" => 1,
+                "created_at" => null,
+                "updated_at" => null,
+            ],
+            [
+                "id" => -1,
+                "name" => "Immediate Head",
+                "shortcut" => "Immediate Head",
+                "created_by" => null,
+                "isActive" => 1,
+                "created_at" => null,
+                "updated_at" => null,
+            ]
+        ];
+
+        $departments = array_merge($additionalOptions, $departments);
         // dd($departments);
 
         return view('admin.approval', compact('requestTypes', 'departments'));
@@ -91,10 +113,35 @@ class PurchaseRequisitionFormController extends Controller
 
     public function showForm()
     {
-        $requestTypes = RequestType::all();
+        $requestTypes = RequestType::orderBy('created_at', 'asc')->get();
         $departments = Department::where('isActive', 1)->get();
         $user_info = User::with('approver')->find(auth()->user()->id);
         $approver = $user_info->approver;
+
+        $departments->prepend(
+            (new Department())->forceFill([
+                "id" => -1,
+                "name" => "Immediate Head",
+                "shortcut" => "Immediate Head",
+                "created_by" => null,
+                "isActive" => 1,
+                "created_at" => null,
+                "updated_at" => null,
+            ])
+        );
+        
+        $departments->prepend(
+            (new Department())->forceFill([
+                "id" => -2,
+                "name" => "Requestor",
+                "shortcut" => "Requestor",
+                "created_by" => null,
+                "isActive" => 1,
+                "created_at" => null,
+                "updated_at" => null,
+            ])
+        );
+        // dd($departments);
 
         return view('requisition.requisition-form', compact('requestTypes', 'departments', 'approver'));
     }
@@ -115,12 +162,16 @@ class PurchaseRequisitionFormController extends Controller
             'request_type',
             'request_details',
             'next_department',
-            'assign_employee',
+            // 'assign_employee',
         ]);
+
+        // dd($prfData);
 
         DB::transaction(function () use ($request, $prfData) {
 
+            // $prfData['next_department'] = (int) $prfData['next_department'];
             $PRF = PurchaseRequisitionForm::create($prfData);
+            // dd($prfData);
 
             $uploadedFileIds = [];
             foreach ($request->file('upload_pdf') as $file) {
@@ -135,7 +186,7 @@ class PurchaseRequisitionFormController extends Controller
             RequisitionWorkflowTracker::create([
                 'requisition_id' => $PRF->id,
                 'department_id' => $PRF->next_department,
-                'employee_id' => $PRF->assign_employee,
+                // 'employee_id' => $PRF->assign_employee,
             ]);
         });
 
@@ -144,6 +195,7 @@ class PurchaseRequisitionFormController extends Controller
 
     public function approveOrReject(Request $request)
     {
+        // dd('test', $request->all());
         $request->validate([
             'id' => 'required',
             'status' => 'required',
@@ -162,8 +214,37 @@ class PurchaseRequisitionFormController extends Controller
         }
 
         $requisition = PurchaseRequisitionForm::find($request->id);
+        // $PRFWorkflow = $requisition->workflowSteps()->orderBy('id', 'asc')->get();
+
+        $skip = $status == 2 ? 1 : 0;
+        $latestTracker = $requisition->tracker()
+            ->latest()
+            ->skip($skip)
+            ->first();
+
+        // dd($request->nextDepartment);
+
+        if ($latestTracker) {
+            $latestTracker->submitted_at = now();
+            $latestTracker->save();
+        }
+        
         $requisition->status = $status;
+        $requisition->next_department = $request->nextDepartment;
+        $requisition->assign_employee = null;
         $requisition->save();
+
+        $currentWorkflowStepId = $request->workflow_step_id;
+            
+        if ($skip) {
+            $this->deleteFiles($currentWorkflowStepId);
+        } else {
+            RequisitionWorkflowTracker::create([
+                'requisition_id' => $requisition->id,
+                'department_id' => $request->nextDepartment,
+                // 'employee_id' => $requisition->assign_employee,
+            ]);
+        }
 
         return json_encode([
             'status' => 'success',
@@ -181,14 +262,53 @@ class PurchaseRequisitionFormController extends Controller
         ]);
     }
 
+    public function deleteRequestType(Request $request)
+    {
+        $request->validate([
+            'type_id' => 'required'
+        ]);
+
+        $id = $request->type_id;
+        $type = RequestType::find($id);
+        UploadedFile::where('request_type_id', $id)->get()
+            ->each(function ($file) {
+                Storage::disk('public')->delete($file->path);
+            });
+        UploadedFile::where('request_type_id', $id)->delete();
+        $workFlow = PRWorkFlowSteps::where('type_id', $id)->delete();
+        
+        if ($type) {
+            $type->delete();
+        }
+
+        return json_encode([
+            'status' => 'success',
+            'message' => 'Request Type successfully deleted!'
+        ]);
+    }
+
     public function otherPRFDetails(Request $request)
     {
         $PRFWorkflow = optional(
-            PRWorkFlowSteps::where('type_id', $request->request_id)->first()
+            PRWorkFlowSteps::where('type_id', $request->request_id)->orderBy('id', 'asc')->skip(1)->first()
         )->toArray();
+        
+        $completeFlow = PRWorkFlowSteps::with('department')->where('type_id', $request->request_id)->orderBy('id', 'asc')->get()
+            ->map(function ($step) {
+                if ($step->department) {
+                    return $step->department->name;
+                }
 
-        $completeFlow = PRWorkFlowSteps::with('department')->where('type_id', $request->request_id)->get();
-        $completeFlow = $completeFlow->pluck('department.name');
+                if ($step->ordering == -2) {
+                    return 'Requestor';
+                } else if ($step->ordering == -1) {
+                    return 'Immediate Head';
+                }
+
+                return null;
+            });
+        // dd($completeFlow);
+        // $completeFlow = $completeFlow->pluck('department.name');
         
         $ordering = $PRFWorkflow['ordering'] ?? null;
         
@@ -228,18 +348,25 @@ class PurchaseRequisitionFormController extends Controller
 
         if (auth()->user()->role_id != 1) {
             $userId = auth()->user()->id;
-            $prfData->where(function ($query) use ($userId, $request) {
+            $depId = auth()->user()->department_id;
+            $prfData->where(function ($query) use ($userId, $depId, $request) {
+                // dd($request->forms_by);
 
                 if ($request->forms_by == "0") {
                     $query->where('request_by', $userId);
                 } else {
-                    $query->where('assign_employee', $userId)
+                    $query->where('next_department', $depId)
+                        ->orWhereHas('approverByDepartment', function ($q) use ($userId) { 
+                            $q->where('approver', $userId);
+                        })
                         ->orWhereHas('requestBy', function ($q) use ($userId) { 
                             $q->where('approver_id', $userId);
                         });
                 }
             });
         }
+
+        // dd($prfData->get());
 
         // Column Filters
         if ($request->status != "") {
@@ -249,7 +376,10 @@ class PurchaseRequisitionFormController extends Controller
         if ($request->date_requested) {
             // $prfData->whereDate('date_request', $request->date_requested);
             $prfData->whereBetween('date_request', [$request->date_requested, Carbon::today()]);
-        }
+        } 
+        // else {
+        //     $prfData->whereBetween('date_request', [Carbon::now()->startOfMonth(), Carbon::today()]);
+        // }
 
          
 
@@ -299,12 +429,17 @@ class PurchaseRequisitionFormController extends Controller
                 return $row->departmentName->name;
             })
             ->editColumn('assign_employee', function ($row) {
-                return $row->assignedEmployee->name;
+                $isImmediateHead = $row->approverByDepartment?->approver == auth()->user()->id;
+
+                // dd($row->approverByDepartment);
+                return $row->status === 2 ? '---' : ($row->assignedEmployee?->name
+                    ? $row->assignedEmployee->name
+                    : ($row->requestor?->approver_id == auth()->user()->id ? "Immediate Head" : '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>'));
             })
             ->addColumn('actions', function ($row) {
                 return '<a href="'.route('requisition.edit', $row->id).'" class="btn btn-sm btn-info">View</a>';
             })
-            ->rawColumns(['actions'])
+            ->rawColumns(['assign_employee', 'actions'])
             ->make(true);
     }
 
@@ -382,7 +517,7 @@ class PurchaseRequisitionFormController extends Controller
 
     public function getTypeFlow(Request $request) 
     {
-        $requestTypeFlow = PRWorkFlowSteps::where('type_id', $request->request_id)->get();
+        $requestTypeFlow = PRWorkFlowSteps::where('type_id', $request->request_id)->orderBy('id', 'asc')->get();
 
         return json_encode([
             'status' => 'success',
@@ -411,19 +546,20 @@ class PurchaseRequisitionFormController extends Controller
     {
         $requisition->load(['requestType', 'attachmentsByPRF', 'workflowSteps']);
         
-        $requestTypes = RequestType::all();
+        $requestTypes = RequestType::orderBy('id', 'asc')->get();
         $departments = Department::where('isActive', 1)->get();
 
         $attachments = $requisition->attachmentsByPRF()->where('uploaded_by', $requisition->request_by)->get();
 
-        $PRFWorkflow = $requisition->workflowSteps;
+        $PRFWorkflow = $requisition->workflowSteps()->orderBy('id', 'asc')->get();
         $tracker = $requisition->tracker()->orderBy('id', 'asc')->get()->toArray();
 
         $user_info = User::with('approver')->find($requisition->request_by);
         $approver = $user_info->approver;
+        // dd($user_info);
 
         return view('requisition.requisition-edit', 
-            compact('requisition', 
+            compact('requisition',
                 'requestTypes',
                 'departments',
                 'attachments',
@@ -472,13 +608,21 @@ class PurchaseRequisitionFormController extends Controller
             $remarks = $request->input('remarks', null);
             
             $latestTracker = $requisition->tracker()->latest()->skip(1)->first();
+            $next_department = $latestTracker->department_id ?? null;
+            $assign_employee = $latestTracker->employee_id ?? null;
+            
+            if($requisition->toArray()['id'] == $request->requisition_id) {
+                $next_department = $requisition->toArray()['department'];
+                $assign_employee = null;
+            }
 
             $requisition->status = 2;
-            $requisition->next_department = $latestTracker->department_id;
-            $requisition->assign_employee = $latestTracker->employee_id;
+            $requisition->next_department = $next_department;
+            $requisition->assign_employee = $assign_employee;
             $requisition->remarks = $remarks;
             $requisition->save();
         } else {
+            // Approve
             $request->validate([
                 'assign_employee' => 'required',
                 'department_id' => 'required',
@@ -529,7 +673,6 @@ class PurchaseRequisitionFormController extends Controller
                 })->toArray() 
             );
         }
-        
         
         return redirect()->route("requisition.history");
     }
@@ -611,6 +754,27 @@ class PurchaseRequisitionFormController extends Controller
         ];
 
         return json_encode($return);
+    }
+
+    public function assignEmployee(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required',
+            'prf_id' => 'required',
+        ]);
+
+        $prf = PurchaseRequisitionForm::find($request->prf_id);
+        $prf->assign_employee = $request->user_id;
+        $prf->save();
+
+        $prfFlowTracker = RequisitionWorkflowTracker::where('requisition_id', $request->prf_id)->latest()->first();
+        $prfFlowTracker->employee_id = $request->user_id;
+        $prfFlowTracker->save();
+
+        return json_encode([
+            'status' => 'success',
+            'message' => 'PRF Assigned',
+        ]);
     }
 
     /**

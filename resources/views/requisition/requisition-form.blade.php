@@ -128,7 +128,7 @@
         <div class="container my-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center header-flow">
                 @foreach($steps as $index => $step)
-                    <div class="d-flex align-items-center flex-grow-1 position-relative step-container">
+                    <div class="col d-flex align-items-center flex-grow-1 position-relative step-container">
                         <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : '') }}">
                             @if($step['status'] == 'completed')
                                 &#10003;
@@ -351,7 +351,7 @@
                         </div>
                     </div>
                     <div class="col">
-                        <div class="col d-flex align-items-center">
+                        {{-- <div class="col d-flex align-items-center">
                             <p class="m-0 fs-5 fw-bold">Select Employee</p>
                         </div>
                         <select name="assign_employee" id="assign_employee" class="form-select form-select-sm w-75 bg-white @error('assign_employee') is-invalid @enderror">
@@ -361,7 +361,14 @@
                             @error('assign_employee')
                             {{ $message }}
                             @enderror
-                        </div>
+                        </div> --}}
+                        @if ($errors->any())
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -428,15 +435,21 @@
                     contentType: false,
                     success: function (response) {
                         const res = JSON.parse(response);
+                        console.log('completeFlow: ', res.data.completeFlow);
                         const department = res.data["department"];
                         const employee = res.data["employee"];
+                        console.log('department: ', department);
 
                         updateHeaderFlow(res.data.completeFlow);
 
                         const depSelect = $('select[name="next_department_id"]');
                         const empSelect = $('select[name="assign_employee"]');
                         depSelect.val(department?.ordering);
-                        $('input[name="next_department"]').val(department?.ordering);
+                        if (department?.ordering == -1 || department?.ordering == -2) {
+                            $('input[name="next_department"]').val(0);
+                        } else {
+                            $('input[name="next_department"]').val(department?.ordering);
+                        }
                         
                         empSelect.empty();
                         const hiddenOpt = $('<option></option>');

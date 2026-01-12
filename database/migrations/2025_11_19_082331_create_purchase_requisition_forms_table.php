@@ -29,7 +29,7 @@ class CreatePurchaseRequisitionFormsTable extends Migration
             $table->text('request_details');
             $table->text('remarks');
             $table->foreignId('next_department')->constrained('departments', 'id');
-            $table->foreignId('assign_employee')->constrained('users', 'id');
+            $table->foreignId('assign_employee')->constrained('users', 'id')->nullable();
             $table->timestamps();
         });
     }

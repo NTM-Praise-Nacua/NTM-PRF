@@ -355,6 +355,7 @@
             dropDown.append(emptyOpt);
 
             const departments = @json($departments);
+            console.log('dpts: ', departments);
                 
             departments.forEach(el => {
                 const option = $('<option></option>');

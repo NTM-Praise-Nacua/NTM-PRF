@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\PurchaseRequisitionForm;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
@@ -15,7 +17,8 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        return view('users.department');
+        $users = User::orderBy('name', 'ASC')->get();
+        return view('users.department', compact('users'));
     }
 
     /**
@@ -31,7 +34,9 @@ class DepartmentController extends Controller
     public function getDepartmentsData()
     {
         // eager load
-        $department = Department::with(['creator']);
+        $department = Department::with(['creator'])
+            ->leftJoin('users', 'users.id', '=', 'departments.approver')
+            ->select('departments.*', 'users.name as approver_name');
 
         return DataTables::of($department)
             ->addIndexColumn()
@@ -43,6 +48,9 @@ class DepartmentController extends Controller
             })
             ->editColumn('created_by', function ($row) {
                 return $row->creator->name;
+            })
+            ->editColumn('approver_name', function ($row) {
+                return $row->approver_name ?? '---';
             })
             ->rawColumns(['actions'])
             ->make(true);
@@ -67,13 +75,15 @@ class DepartmentController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'shortcut' => 'required'
+            'shortcut' => 'required',
+            'approver' => 'required',
         ]);
 
-        $result = Department::create([
+        Department::create([
             'name' => $request->name, 
             'shortcut' => $request->shortcut,
             'created_by' => auth()->user()->id,
+            'approver' => $request->approver,
         ]);
 
         return redirect()->route('department.list');
@@ -114,18 +124,33 @@ class DepartmentController extends Controller
             'departmentId' => 'required',
             'name' => 'required',
             'shortcut' => 'required',
+            'approver' => 'required',
         ]);
 
         $department = Department::find($request->departmentId);
 
         $department->name = $request->name;
         $department->shortcut = $request->shortcut;
+        $department->approver = $request->approver;
         $department->save();
 
         return json_encode([
             'status' => 'success',
             'message' => 'Department Details Updated!',
             'data' => $department
+        ]);
+    }
+
+    public function getMembers(Request $request)
+    {
+        $request->validate([
+            'requisition_id' => 'required'
+        ]);
+        $requisition = PurchaseRequisitionForm::find($request->requisition_id);
+        $users = User::where('department_id', $requisition->next_department)->get()->toArray();
+
+        return json_encode([
+            'users' => $users
         ]);
     }
 

@@ -4,7 +4,7 @@
     <x-container pageTitle="User List">
         
         <div class="">
-            <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
+            <button class="btn btn-sm btn-primary float-end add-btn position-relative z-1" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
             <table id="users-table" class="table table-hover table-striped my-2">
                 <thead>
                     <tr>
@@ -65,7 +65,7 @@
                         </div>
                         <div class="d-flex mb-3 gap-2">
                             <div class="form-floating col">
-                                <input type="email" class="form-control" name="email" 
+                                <input type="text" class="form-control" name="email" 
                                 id="email" placeholder="Email">
                                 <label for="email">Email</label>
                             </div>
@@ -256,7 +256,7 @@
                     {data: 'name'},
                     {data: 'email'},
                     {data: 'position_id'},
-                    {data: 'department_id', searchable: true},
+                    {data: 'department_name', name: 'departments.name'},
                     {data: 'created_by'},
                     {data: 'actions', orderable: false, searchable: false}
                 ],
@@ -341,6 +341,8 @@
                     success: function (response) {
                         const res = JSON.parse(response);
 
+                        console.log('response:', res);
+
                         if (res.status == 'success') {
                             const form = $('#editUser');
                             form.find('input:text, input:password, input[type=email], textarea, select').val('');
@@ -351,7 +353,7 @@
                             if (departmentTeam) {
                                 console.log("departmentTeam: ", departmentTeam);
                                 console.log("approverId: ", approverId);
-                                addTeamDropdown(departmentTeam, approverId);
+                                addTeamDropdown(departmentTeam, approverId, res.data.department_id);
                             }
 
                             const firstName = form.find('input[name="first_name"]');
@@ -418,7 +420,7 @@
                 });
             });
 
-            function addTeamDropdown(teamUsers, id) {
+            function addTeamDropdown(teamUsers, id, department) {
                 const selectEl = $('#editapprover');
                 selectEl.empty();
 
@@ -434,7 +436,10 @@
                     const opt = $('<option></option>', {
                         value: user.id,
                         selected: id == user.id ? true : false,
-                        text: user.name
+                        text: user.name,
+                    })
+                    .css({
+                        background: user.department_id == department ? '#FFFFE6' : 'none'
                     });
                     selectEl.append(opt);
                 });

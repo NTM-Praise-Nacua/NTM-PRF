@@ -136,9 +136,16 @@
     $currentStep = null;
     $steps = [];
 
+    // dd('tracker', $tracker);
+    // dd($PRFWorkflow->toArray());
+    // dd($requisition->toArray());
     foreach ($PRFWorkflow as $index => $item) {
-        $trackerExists = isset($tracker[$index]);
-        $rawSubmittedAt = $trackerExists ? $tracker[$index]['submitted_at'] : null;
+        $calculatedIndex = $index;
+
+        if ($index >= 1 && $requisition->status != 0) $calculatedIndex -= 1;
+
+        $trackerExists = isset($tracker[$calculatedIndex]);
+        $rawSubmittedAt = ($trackerExists ? ($tracker[$calculatedIndex]['submitted_at'] ? $tracker[$calculatedIndex]['submitted_at'] : null) : null);
 
         if (!$trackerExists) {
             $status = '';
@@ -149,6 +156,16 @@
             $status = 'completed';
         }
 
+        // if ($index == 2) {
+            // dd('status', $status);
+            // dd('tracker', $tracker[$calculatedIndex]);
+            // dd('rawSubmittedAt', $rawSubmittedAt);
+        // }
+
+        if ($index == 1 && $status == '') {
+            $status = $requisition->status == 2 ? 'rejected' : 'pending';
+        }
+
         if ($status === 'completed') {
             $displayDate = (new DateTime($rawSubmittedAt))->format("D, F j, h:i a");
         } elseif ($status === 'pending') {
@@ -157,8 +174,20 @@
             $displayDate = '---';
         }
 
+        $name = $item->department->shortcut ?? '---';
+        if ($item['ordering'] == -2) {
+            $name = 'Requestor';
+            $displayDate = (new DateTime($requisition->created_at))->format("D, F j, h:i a");
+            $status = 'completed';
+        } else if ($item['ordering'] == -1) {
+            $name = 'Immediate Head';
+            // dd($status);
+            $status = $status == '' ? 'pending' : $status;
+            $displayDate = $status == 'pending' ? date("D, F j, h:i a") : $displayDate;
+        }
+
         $steps[] = [
-            'name'  => $item->department->shortcut ?? '---',
+            'name'  => $name,
             'date'  => $displayDate,
             'status'=> $status,
         ];
@@ -173,10 +202,12 @@
         }
     }
 
-    $nextIndex = array_key_last($tracker) + ($requisition->status == 2 ? 0 : 1);
+    $nextIndex = array_key_last($tracker) + ($requisition->status == 2 ? 0 : 1) + 1;
     $nextDepartment = optional($PRFWorkflow->get($nextIndex))?->toArray();
 
     $nextDepId = $nextDepartment ? $nextDepartment['ordering'] : null;
+    // dd($steps);
+    // dd($nextIndex, $nextDepartment, $nextDepId);
 @endphp
 
 @section('content')
@@ -613,10 +644,21 @@
                     contentType: false,
                     success: function (response) {
                         const res = JSON.parse(response);
+                        let departments = res.data.departments;
+                        let files = res.data.files;
+                        let naIndexes = [];
+                    
+                        departments.forEach((dept, index) => {
+                            if (dept === "N/A") {
+                                naIndexes.push(index);
+                            }
+                        });
 
-                        console.log('response: ', res);
+                        for (let i = naIndexes.length - 1; i >= 0; i--) {
+                            files.splice(naIndexes[i], 0, []);
+                        }
 
-                        createRequestStatusElements(res.data.departments, res.data.files);
+                        createRequestStatusElements(departments, files);
 
                         const modalEl = document.getElementById('requestStatusModal');
                         const modal = new bootstrap.Modal(modalEl);
@@ -632,6 +674,10 @@
                 const wrapper = $('#requestStatusContainer');
                 wrapper.empty();
                 
+                console.log("files: ", files);
+                console.log("files length: ", files.length);
+                console.log("files[0] length: ", files[0].length);
+                console.log("files[1] length: ", files[1].length);
                 departments.forEach((name, index) => {
                     const itemEl = $('<div></div>').addClass("accordion-item");
                     
@@ -651,11 +697,12 @@
 
                     const bodyWrapper = $('<div></div>', {
                         id:`collapse_${index}`,
-                        class:"accordion-collapse collapse",'data-bs-parent':"#requestStatusContainer"
+                        class:"accordion-collapse collapse",
+                        'data-bs-parent':"#requestStatusContainer"
                     });
                     const bodyEl = $('<div></div>', {
-                        text: !files[index] ? "No attachments yet." : "",
-                        class: `accordion-body ${!files[index] ? "fst-italic" : "fs-6"}`
+                        text: files[index]?.length == 0 || !files[index] ? "No attachments yet." : "",
+                        class: `accordion-body ${files[index]?.length == 0 || !files[index] ? "fst-italic" : "fs-6"}`
                     });
                     
                     if (files[index]) {
@@ -1048,6 +1095,7 @@
 
             $('.reject-btn').on('click', function() {
                 const isBetween = @json($isBetween);
+                console.log("isBetween: ", isBetween);
 
                 if (isBetween) {
                     const form = $(this).closest('form');
@@ -1056,7 +1104,12 @@
                         name: "status",
                         value: "reject",
                     });
-                    form.append(inputStatus);
+                    const inputReqId = $('<input>', {
+                        hidden: true,
+                        name: "requisition_id",
+                        value: @json($requisition->id),
+                    });
+                    form.append(inputStatus, inputReqId);
                     form.submit();
                 } else {
                     approveOrReject('Reject');
@@ -1068,6 +1121,7 @@
                 const formData = new FormData();
                 formData.append('_token', token);
                 formData.append('id', {{ $requisition->id }});
+                formData.append('nextDepartment', {{ $nextDepId }});
                 formData.append('status', status);
                 $.ajax({
                     url: '{{ route("requisition.approve.reject") }}',

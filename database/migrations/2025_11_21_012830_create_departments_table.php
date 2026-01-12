@@ -18,6 +18,7 @@ class CreateDepartmentsTable extends Migration
             $table->string('name');
             $table->string('shortcut');
             $table->foreignId('created_by')->constrained('users', 'id');
+            $table->foreignId('approver')->constrained('users', 'id')->nullable();
             $table->smallInteger('isActive')->default(1);
             $table->timestamps();
         });

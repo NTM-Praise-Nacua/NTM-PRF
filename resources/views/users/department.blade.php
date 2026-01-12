@@ -5,7 +5,7 @@
 <x-container pageTitle="Department List">
     
     <div>
-        <button class="btn btn-sm btn-primary float-end add-btn" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">Add</button>
+        <button class="btn btn-sm btn-primary float-end add-btn position-relative z-1" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">Add</button>
         <table id="department-table" class="table table-hover table-striped my-2">
             <thead>
                 <tr>
@@ -13,6 +13,7 @@
                     <th>Name</th>
                     <th>Short Name</th>
                     <th>Created By</th>
+                    <th>Approver</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -43,6 +44,15 @@
                         <input type="text" class="form-control bg-white" name="shortcut" id="shortcut" placeholder="Shortcut">
                         <label for="shortcut">Shortcut Name (ex. "HR")</label>
                     </div>
+                    <div class="form-floating mb-3">
+                        <select class="form-select" name="approver" id="approver">
+                            <option selected hidden>Select Approver</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                        <label for="approver">Approver</label>
+                    </div>
                     <button class="btn btn-primary">Add</button>
                 </form>
             </div>
@@ -69,6 +79,15 @@
                         <input type="text" class="form-control bg-white" name="shortcut" id="shortcut" placeholder="Shortcut">
                         <label for="shortcut">Shortcut Name (ex. "HR")</label>
                     </div>
+                    <div class="form-floating mb-3">
+                        <select class="form-select" name="approver" id="approver">
+                            <option selected hidden>Select Approver</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                        <label for="approver">Approver</label>
+                    </div>
                     <button class="btn btn-primary">Save Changes</button>
                 </form>
             </div>
@@ -92,6 +111,7 @@
                     {data: 'name'},
                     {data: 'shortcut'},
                     {data: 'created_by'},
+                    {data: 'approver_name', name: 'users.name'},
                     {data: 'actions', orderable: false, searchable: false}
                 ],
                 columnDefs: [
@@ -101,11 +121,11 @@
                     },
                     {
                         width: "150px",
-                        targets: [2,3]
+                        targets: [2,3,4]
                     },
                     {
                         width:"50px",
-                        targets: [0,4]
+                        targets: [0,5]
                     }
                 ]
             });
@@ -121,7 +141,7 @@
                     processData: false,
                     contentType: false,
                     success: function (response) {
-                        const res = JSON.parse(response);
+                        // const res = JSON.parse(response);
 
                         $('.is-invalid').removeClass('is-invalid');
                         $('.invalid-feedback').remove();
@@ -165,10 +185,12 @@
 
                             const name = form.find('input[name="name"]');
                             const shortcut = form.find('input[name="shortcut"]');
+                            const approver = form.find('select[name="approver"]');
                             
                             hiddenInput.val(res.data.id);
                             name.val(res.data.name);
                             shortcut.val(res.data.shortcut);
+                            approver.val(res.data.approver);
 
                             const modalEl = document.getElementById('editDepartmentModal');
                             const modal = new bootstrap.Modal(modalEl);

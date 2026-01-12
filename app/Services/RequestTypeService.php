@@ -8,7 +8,7 @@ class RequestTypeService
 {
     public function getRequestType()
     {
-        $data = RequestType::all();
+        $data = RequestType::orderBy('id','asc')->get();
 
         return $data;
     }

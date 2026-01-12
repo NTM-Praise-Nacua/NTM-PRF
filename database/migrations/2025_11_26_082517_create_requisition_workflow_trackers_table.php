@@ -17,7 +17,7 @@ class CreateRequisitionWorkflowTrackersTable extends Migration
             $table->id();
             $table->foreignId('requisition_id')->constrained('purchase_requisition_forms', 'id');
             $table->foreignId('department_id')->constrained('departments', 'id');
-            $table->foreignId('employee_id')->constrained('users', 'id');
+            $table->foreignId('employee_id')->constrained('users', 'id')->nullable();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });

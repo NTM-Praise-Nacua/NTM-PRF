@@ -90,7 +90,7 @@
         </div>
         @endauth
         <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
-            <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm position-sticky top-0" style="z-index: 5;">
+            <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm position-sticky top-0" style="z-index: 10;">
                 <div class="d-flex align-items-center justify-content-between w-100 mx-2" style="height: 40px;">
     
                     <div class="d-flex justify-content-end w-100 position-relative" id="navbarSupportedContent">
@@ -144,7 +144,7 @@
     </div>
     @stack('js')
     <script>
-        function alertMessage(msg, status, location = "", confirm = false, id = null) {
+        function alertMessage(msg, status, location = "", confirm = false, id = null, noReload = false) {
             if (!confirm) {
                 Swal.fire({
                     title: msg,
@@ -152,7 +152,7 @@
                     showConfirmButton: confirm,
                     timer: 1500
                 }).then((result) => {
-                    if (result.dismiss === Swal.DismissReason.timer && status == "success") {
+                    if (result.dismiss === Swal.DismissReason.timer && status == "success" && !noReload) {
                         if (!location) {
                             window.location.reload();
                         } else {

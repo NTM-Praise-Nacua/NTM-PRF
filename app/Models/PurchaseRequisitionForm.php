@@ -53,6 +53,11 @@ class PurchaseRequisitionForm extends Model
         return $this->belongsTo(User::class, 'request_by', 'id');
     }
 
+    public function approverByDepartment()
+    {
+        return $this->belongsTo(Department::class, 'next_department', 'id');
+    }
+
     public function positionName()
     {
         return $this->belongsTo(Position::class, 'position', 'id');
@@ -81,5 +86,10 @@ class PurchaseRequisitionForm extends Model
     public function tracker()
     {
         return $this->hasMany(RequisitionWorkflowTracker::class, 'requisition_id', 'id');
+    }
+
+    public function requestor()
+    {
+        return $this->belongsTo(User::class, 'request_by', 'id');
     }
 }

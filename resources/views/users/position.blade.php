@@ -4,7 +4,7 @@
     <x-container pageTitle=" Position List">
         
         <div class="">
-            <button class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#addPositionModal">Add</button>
+            <button class="btn btn-sm btn-primary float-end position-relative z-1" data-bs-toggle="modal" data-bs-target="#addPositionModal">Add</button>
             <table id="positions-table" class="table table-hover table-striped my-2">
                 <thead>
                     <tr>
@@ -112,13 +112,13 @@
                 const formData = new FormData(this);
 
                 $.ajax({
-                    url: "{{ route('department.add') }}",
+                    url: "{{ route('position.add') }}",
                     type: "POST",
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function (response) {
-                        const res = JSON.parse(response);
+                        // const res = JSON.parse(response);
 
                         $('.is-invalid').removeClass('is-invalid');
                         $('.invalid-feedback').remove();

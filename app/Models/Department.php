@@ -13,6 +13,7 @@ class Department extends Model
         'name', 
         'shortcut',
         'created_by',
+        'approver',
         'isActive'
     ];
 

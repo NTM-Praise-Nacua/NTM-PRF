@@ -28,7 +28,10 @@ class UserController extends Controller
 
     public function getUsersData()
     {
-        $users = User::with (['creator', 'position', 'department']);
+        // $users = User::with (['creator', 'position', 'department']);
+        $users = User::with(['creator', 'position', 'department'])
+            ->leftJoin('departments', 'departments.id', '=', 'users.department_id')
+            ->select('users.*', 'departments.name as department_name');
         return DataTables::of($users)
             ->editColumn('created_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('M d, Y') : '';
@@ -37,13 +40,13 @@ class UserController extends Controller
                 return '<a href="javascript:void(0);" data-id="'.$row->id.'" class="btn btn-sm btn-primary edit-btn">Edit</a>';
             })
             ->editColumn('created_by', function ($row) {
-                return $row->creator->name;
+                return $row->creator->name ?? '---';
             })
             ->editColumn('position_id', function ($row) {
                 return $row->position->name ?? '---';
             })
-            ->editColumn('department_id', function ($row) {
-                return $row->department->name ?? '---';
+            ->editColumn('department_name', function ($row) {
+                return $row->department_name ?? '---';
             })
             ->editColumn('role_id', function ($row) {
                 return $row->role->name ?? '---';
@@ -66,7 +69,10 @@ class UserController extends Controller
 
     public function getUsersByDepartment($id)
     {
-        $users = User::where('department_id', $id)
+        // $users = User::where('department_id', $id)
+        //     ->get();
+        $users = User::orderByRaw('department_id = ? DESC', [$id])
+            ->orderBy('name', 'ASC')
             ->get();
 
         return $users;
@@ -100,7 +106,7 @@ class UserController extends Controller
             'department' => 'required',
             'position' => 'required',
             'role' => 'required',
-            'approver' => 'required',
+            // 'approver' => 'required',
         ]);
 
         $firstName = $request->first_name;
@@ -111,7 +117,7 @@ class UserController extends Controller
         $position = $request->position;
         $department = $request->department;
         $role = $request->role;
-        $approver = $request->approver;
+        // $approver = $request->approver;
         
         $email = $request->email;
         $password = Hash::make($request->password);
@@ -127,7 +133,7 @@ class UserController extends Controller
             'contact_no' => $contact,
             'department_id' => $department,
             'role_id' => $role,
-            'approver_id' => $approver,
+            // 'approver_id' => $approver,
             'position_id' => $position,
         ]);
 
@@ -174,7 +180,7 @@ class UserController extends Controller
             'userId' => 'required',
             'first_name' => 'required',
             'last_name' => 'required',
-            'email' => 'required',
+            'email' => 'required|email',
             'contact' => 'required',
             'position' => 'required',
             'department' => 'required',

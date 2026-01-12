@@ -38,7 +38,7 @@ class StorePRFRequest extends FormRequest
             'upload_pdf' => 'required|array',
             'upload_pdf.*' => 'file|mimes:pdf',
             'next_department' => 'required',
-            'assign_employee' => 'required',
+            // 'assign_employee' => 'required',
         ];
     }
 }
