@@ -49,7 +49,10 @@
         .footer {
             height: 50px;
             min-height: 50px;
-            background: #f3f4f6;
+            border-top: 1px solid #D8D334;
+            font-size: 12px;
+            font-weight: medium;
+            color: #5E6A75;
         }
         .circle {
             height: 45px;
@@ -65,8 +68,8 @@
             opacity: .5;
             background: #005380;
         } */
-        .active-current, .sidenav, .tab-link:not(.active-current):hover {
-            background: #00598a !important;
+        .active-current, .tab-link:not(.active-current):hover {
+            background: rgb(255, 255, 255, 0.1) !important;
         }
         .active-current:hover, {
             color: lightgray !important;
@@ -78,6 +81,13 @@
         .top-left {
             float: left;
         }
+
+        .primary-color {
+            background-color: #003A77;
+        }
+        .main {
+            background-color: #F2F4F7;
+        }
     </style>
 
     @stack('css')
@@ -85,31 +95,31 @@
 <body>
     <div id="app" class="d-flex container-fluid p-0 vh-100">
         @auth
-        <div class="sidebar position-sticky h-100 d-flex flex-column sidebar-close shadow">
+        <div class="sidebar primary-color position-sticky h-100 d-flex flex-column sidebar-close shadow">
             @include('layouts.include.sidebar')
         </div>
         @endauth
         <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
-            <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm position-sticky top-0" style="z-index: 10;">
-                <div class="d-flex align-items-center justify-content-between w-100 mx-2" style="height: 40px;">
+            <nav class="primary-color navbar navbar-expand-md navbar-light shadow-sm position-sticky top-0" style="z-index: 10; height: 48px;">
+                <div class="d-flex align-items-center justify-content-between w-100 mx-2">
     
                     <div class="d-flex justify-content-end w-100 position-relative" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto">
                             @guest
                                 @if (Route::has('login'))
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                        <a class="nav-link text-white" href="{{ route('login') }}">{{ __('Login') }}</a>
                                     </li>
                                 @endif
     
                                 @if (Route::has('register'))
                                     <li class="nav-item">
-                                        <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                        <a class="nav-link text-white" href="{{ route('register') }}">{{ __('Register') }}</a>
                                     </li>
                                 @endif
                             @else
                                 <li class="nav-item dropdown">
-                                    <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    <a id="navbarDropdown" class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                         {{ Auth::user()->name }}
                                     </a>
     
@@ -131,12 +141,12 @@
                 </div>
             </nav>
     
-            <main class="p-4 flex-grow-1">
+            <main class="p-4 flex-grow-1 main d-flex justify-content-center">
                 @yield('content')
             </main>
 
             @auth
-            <footer class="footer border-top d-flex align-items-center justify-content-center ps-3">
+            <footer class="footer border-top d-flex align-items-center justify-content-center bg-white p-3">
                 @include('layouts.include.footer')
             </footer>
             @endauth

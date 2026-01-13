@@ -1,5 +1,5 @@
-<div class="sidenav navbar justify-content-center border mb-2 fw-bold py-2 position-relative">
-    <a class="navbar-brand text-white" href="javascript:void(0);" style="height: 40px;">
+<div class="sidenav navbar justify-content-center align-items-center mb-2 fw-bold py-2 position-relative" style="height: 48px;">
+    <a class="navbar-brand text-white" href="javascript:void(0);" style="">
         PR LOGO
     </a>
     <x-menu></x-menu>
