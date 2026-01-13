@@ -213,8 +213,14 @@ class PurchaseRequisitionFormController extends Controller
                 break;
         }
 
+        $empId = null;
+
         $requisition = PurchaseRequisitionForm::find($request->id);
         // $PRFWorkflow = $requisition->workflowSteps()->orderBy('id', 'asc')->get();
+        $requestType = RequestType::find($requisition->request_type);
+        if (($requestType->slug == "laptop_plan" || strtolower($request->name) == "laptop plan") && $status == 1) {
+            $empId = 34; // Ashvee
+        }
 
         $skip = $status == 2 ? 1 : 0;
         $latestTracker = $requisition->tracker()
@@ -231,7 +237,7 @@ class PurchaseRequisitionFormController extends Controller
         
         $requisition->status = $status;
         $requisition->next_department = $request->nextDepartment;
-        $requisition->assign_employee = null;
+        $requisition->assign_employee = $empId;
         $requisition->save();
 
         $currentWorkflowStepId = $request->workflow_step_id;
@@ -242,7 +248,7 @@ class PurchaseRequisitionFormController extends Controller
             RequisitionWorkflowTracker::create([
                 'requisition_id' => $requisition->id,
                 'department_id' => $request->nextDepartment,
-                // 'employee_id' => $requisition->assign_employee,
+                'employee_id' => $empId,
             ]);
         }
 
@@ -431,10 +437,10 @@ class PurchaseRequisitionFormController extends Controller
             ->editColumn('assign_employee', function ($row) {
                 $isImmediateHead = $row->approverByDepartment?->approver == auth()->user()->id;
 
-                // dd($row->approverByDepartment);
+                // dd($row->requestor?->approver_id, auth()->user()->id);
                 return $row->status === 2 ? '---' : ($row->assignedEmployee?->name
                     ? $row->assignedEmployee->name
-                    : ($row->requestor?->approver_id == auth()->user()->id ? "Immediate Head" : '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>'));
+                    : (($row->requestor?->approver_id == auth()->user()->id) || $row->status === 0 ? "Immediate Head" : '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>'));
             })
             ->addColumn('actions', function ($row) {
                 return '<a href="'.route('requisition.edit', $row->id).'" class="btn btn-sm btn-info">View</a>';
@@ -611,20 +617,25 @@ class PurchaseRequisitionFormController extends Controller
             $next_department = $latestTracker->department_id ?? null;
             $assign_employee = $latestTracker->employee_id ?? null;
             
-            if($requisition->toArray()['id'] == $request->requisition_id) {
+            if($requisition->toArray()['id'] == $request->requisition_id && in_array($requisition->status, [0, 1])) {
                 $next_department = $requisition->toArray()['department'];
                 $assign_employee = null;
             }
 
-            $requisition->status = 2;
+            // dd($request->all(),$requisition->toArray(), $latestTracker->toArray(), $next_department, $assign_employee);
+            // dd($requisition->requestor->approver_id,  $requisition->approverByDepartment->approver);
+            if ($latestTracker->department_id === 0) {
+                $next_department = $requisition->requestor->approver_id ?? $requisition->approverByDepartment->approver;
+            }
             $requisition->next_department = $next_department;
             $requisition->assign_employee = $assign_employee;
             $requisition->remarks = $remarks;
+            $requisition->status = 2;
             $requisition->save();
         } else {
             // Approve
             $request->validate([
-                'assign_employee' => 'required',
+                // 'assign_employee' => 'required',
                 'department_id' => 'required',
                 'workflow_step_id' => 'required',
                 'upload_pdf' => 'required|array',
@@ -642,10 +653,16 @@ class PurchaseRequisitionFormController extends Controller
                 $latestTracker->submitted_at = now();
                 $latestTracker->save();
             }
+
+            $assign_employee = null;
+            $requestType = RequestType::find($requisition->request_type);
+            if (($requestType->slug == "laptop_plan" || strtolower($request->name) == "laptop plan") && $requisition->next_department === 2) { // checks if the currently assigned department is from HR
+                $assign_employee = 45;  // Jojel Bautista
+            }
                 
             $requisition->status = 3;
             $requisition->next_department = $request->department_id;
-            $requisition->assign_employee = $request->assign_employee;
+            $requisition->assign_employee = $assign_employee;
             $requisition->save();
             
             $currentWorkflowStepId = $request->workflow_step_id;
@@ -656,7 +673,7 @@ class PurchaseRequisitionFormController extends Controller
                 RequisitionWorkflowTracker::create([
                     'requisition_id' => $requisition->id,
                     'department_id' => $request->department_id,
-                    'employee_id' => $requisition->assign_employee,
+                    'employee_id' => $assign_employee,
                 ]);
             }
 

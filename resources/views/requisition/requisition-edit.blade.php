@@ -208,6 +208,7 @@
     $nextDepId = $nextDepartment ? $nextDepartment['ordering'] : null;
     // dd($steps);
     // dd($nextIndex, $nextDepartment, $nextDepId);
+    // dd($isBetween);
 @endphp
 
 @section('content')
@@ -416,7 +417,7 @@
                     <div class="col viewPDF"></div>
                 </div>
             </div>
-            <div class="upload-pdf-group row mb-3 {{ ($user->id == $requisition->request_by || $user->role_id == 1 || in_array($requisition->status, [0, 4]) || ($requisition->status == 2 && $user->id != $requisition->assign_employee) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
+            <div class="upload-pdf-group row mb-3 {{ (($user->id == $requisition->request_by && $user->id != $requisition->assign_employee) || $user->role_id == 1 || in_array($requisition->status, [0, 4]) || ($requisition->status == 2 && $user->id != $requisition->assign_employee) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
                     <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" multiple>
@@ -447,7 +448,7 @@
                         </div>
                     </div>
                     <div class="col">
-                        <div class="col d-flex align-items-center">
+                        {{-- <div class="col d-flex align-items-center">
                             <p class="m-0 fs-5 fw-bold">Select Employee</p>
                         </div>
                         <select name="assign_employee" id="assign_employee" class="form-select form-select-sm w-75 bg-white @error('assign_employee') is-invalid @enderror" {{ $nextDepId ?? 'disabled' }}>
@@ -457,16 +458,16 @@
                             @error('assign_employee')
                             {{ $message }}
                             @enderror
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
 
-            @if (($isBetween && $user->id != $requisition->request_by) || ($requisition->status == 2 && $user->id == $requisition->assign_employee))
+            @if (($isBetween && $user->id == $requisition->assign_employee) || !$requisition->remarks)
             <div class="mb-3">
                 <h5>Remarks <span class="fs-6 fw-normal fst-italic">(optional)</span></h5>
                 <div class="form-floating w-50" style="min-width: 300px;">
-                    <textarea id="remarks" name="remarks"  class="form-control" placeholder="Remarks" style="height: 130px"  {{ $requisition->status == 2 && $user->id == $requisition->assign_employee ? 'disabled' : '' }}>{{ $requisition->remarks }}</textarea>
+                    <textarea id="remarks" name="remarks"  class="form-control" placeholder="Remarks" style="height: 130px"  {{ $user->id == $requisition->assign_employee ? '' : 'disabled' }}>{{ $requisition->remarks }}</textarea>
                     <label for="remarks">Remarks</label>
                 </div>
             </div>
@@ -489,10 +490,10 @@
                     @if ($requisition->status == 4 && $user->id == $requisition->request_by)
                         <button type="button" class="btn btn-sm btn-success complete-btn">Complete</button>
                     @else
-                        @if ($isBetween && $user->id != $requisition->request_by && $user->id != $approver->id)
+                        @if ($isBetween && $user->id == $requisition->assign_employee)
                             <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
                         @endif
-                        <button type="submit" class="btn btn-sm btn-primary" {{ ($user->id == $requisition->request_by || $requisition->assign_employee != $user->id || ($requisition->assign_employee == $user->id && $requisition->status == 0)) ? 'disabled' : '' }}>Submit</button>
+                        <button type="submit" class="btn btn-sm btn-primary" {{ (($user->id == $requisition->request_by && $user->id != $requisition->assign_employee) || $requisition->assign_employee != $user->id || ($requisition->assign_employee == $user->id && $requisition->status == 0)) ? 'disabled' : '' }}>Submit</button>
                     @endif
                 @endif
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
@@ -1110,6 +1111,8 @@
                         value: @json($requisition->id),
                     });
                     form.append(inputStatus, inputReqId);
+
+                    // console.log("form:", form);
                     form.submit();
                 } else {
                     approveOrReject('Reject');
