@@ -144,6 +144,9 @@
 
         if ($index >= 1 && $requisition->status != 0) $calculatedIndex -= 1;
 
+        // if ($index == 0) {
+        //     dd($calculatedIndex);
+        // }
         $trackerExists = isset($tracker[$calculatedIndex]);
         $rawSubmittedAt = ($trackerExists ? ($tracker[$calculatedIndex]['submitted_at'] ? $tracker[$calculatedIndex]['submitted_at'] : null) : null);
 
@@ -151,7 +154,17 @@
             $status = '';
         } elseif ($rawSubmittedAt === null) {
             $status = $requisition->status == 2 ? 'rejected' : 'pending';
-            $currentStep = $requisition->status == 2 ? $PRFWorkflow[$index - 1]['id'] : $item->id;
+            // dd($PRFWorkflow[$index]);
+            $workFlowIndex = $index - 1;
+            if ($workFlowIndex < 0) {
+                foreach ($PRFWorkflow as $indx => $row) {
+                    if ($row['ordering'] == $workFlowIndex) {
+                        $workFlowIndex = $indx;
+                        break;
+                    }
+                }
+            }
+            $currentStep = $requisition->status == 2 ? $PRFWorkflow[$workFlowIndex]['id'] : $item->id;
         } else {
             $status = 'completed';
         }
@@ -448,17 +461,6 @@
                         </div>
                     </div>
                     <div class="col">
-                        {{-- <div class="col d-flex align-items-center">
-                            <p class="m-0 fs-5 fw-bold">Select Employee</p>
-                        </div>
-                        <select name="assign_employee" id="assign_employee" class="form-select form-select-sm w-75 bg-white @error('assign_employee') is-invalid @enderror" {{ $nextDepId ?? 'disabled' }}>
-                            <option value="" selected hidden>Select Employee</option>
-                        </select>
-                        <div class="invalid-feedback d-block">
-                            @error('assign_employee')
-                            {{ $message }}
-                            @enderror
-                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -477,13 +479,13 @@
 
             <h6 class="my-3">LIST OF APPROVERS</h6>
             <div class="d-flex flex-wrap">
-                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">{{ $approver?->name }}</div>
+                <div class="rounded-2 bg-info-subtle text-primary px-2 py-1">{{ $approver?->name ?? 'No approver yet.' }}</div>
             </div>
 
             <hr>
 
             <div class="button-group float-end">
-                @if ($user->id == $approver->id && $requisition->status == 0)
+                @if ($user->id == $approver?->id && $requisition->status == 0)
                     <button type="button" class="btn btn-sm btn-primary approve-btn">Approve</button>
                     <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
                 @else

@@ -116,7 +116,7 @@ class PurchaseRequisitionFormController extends Controller
         $requestTypes = RequestType::orderBy('created_at', 'asc')->get();
         $departments = Department::where('isActive', 1)->get();
         $user_info = User::with('approver')->find(auth()->user()->id);
-        $approver = $user_info->approver;
+        $approver = $user_info->approver ?? $user_info->department->departmentApprover;
 
         $departments->prepend(
             (new Department())->forceFill([
@@ -361,18 +361,28 @@ class PurchaseRequisitionFormController extends Controller
                 if ($request->forms_by == "0") {
                     $query->where('request_by', $userId);
                 } else {
-                    $query->where('next_department', $depId)
-                        ->orWhereHas('approverByDepartment', function ($q) use ($userId) { 
-                            $q->where('approver', $userId);
+                    $query->where(function ($q) use ($userId, $depId) {
+                        $q->where('assign_employee', $userId) // logged user must be the assigned ee
+                        ->orWhere(function ($q2) use ($depId) { // or logged user's department is the assigned department but no assigned ee & status is rejected
+                            $q2->where('next_department', $depId)
+                                ->whereNull('assign_employee')
+                                ->where('status', '!=', 2);
                         })
-                        ->orWhereHas('requestBy', function ($q) use ($userId) { 
-                            $q->where('approver_id', $userId);
+                        ->orWhereHas('requestBy', function ($q3) use ($userId) { // or logged user is the approver of current requisition
+                            $q3->where('approver_id', $userId);
+                        })
+                        ->orWhereHas('departmentApprover', function ($q4) use ($userId) { // or logged user is the approver of requestor's department
+                            $q4->where('approver', $userId);
+                        })
+                        ->orWhereHas('approverByDepartment', function ($q5) use ($userId) { // or logged user is the approver of assigned department
+                            $q5->where('approver', $userId);
                         });
+                    });
                 }
             });
         }
 
-        // dd($prfData->get());
+        // dd($prfData->toSql());
 
         // Column Filters
         if ($request->status != "") {
@@ -561,8 +571,9 @@ class PurchaseRequisitionFormController extends Controller
         $tracker = $requisition->tracker()->orderBy('id', 'asc')->get()->toArray();
 
         $user_info = User::with('approver')->find($requisition->request_by);
-        $approver = $user_info->approver;
-        // dd($user_info);
+        // dd($user_info->department->departmentApprover);
+        $approver = $user_info->approver ?? $user_info->department->departmentApprover;
+        // dd($approver);
 
         return view('requisition.requisition-edit', 
             compact('requisition',
@@ -624,7 +635,7 @@ class PurchaseRequisitionFormController extends Controller
 
             // dd($request->all(),$requisition->toArray(), $latestTracker->toArray(), $next_department, $assign_employee);
             // dd($requisition->requestor->approver_id,  $requisition->approverByDepartment->approver);
-            if ($latestTracker->department_id === 0) {
+            if ($latestTracker && $latestTracker->department_id === 0) {
                 $next_department = $requisition->requestor->approver_id ?? $requisition->approverByDepartment->approver;
             }
             $requisition->next_department = $next_department;

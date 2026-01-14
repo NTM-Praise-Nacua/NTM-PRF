@@ -64,7 +64,7 @@
                 </div>
             @endif
 
-            <table id="prf-table" class="table table-striped table-hover no-wrap my-2">
+            <table id="prf-table" class="table table-striped table-hover no-wrap my-2 w-100">
                 <thead>
                     <tr>
                         <th class="text-center">No</th>

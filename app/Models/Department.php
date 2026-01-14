@@ -26,4 +26,9 @@ class Department extends Model
     {
         return $this->belongsToMany(User::class, 'id', 'department_id');
     }
+
+    public function departmentApprover()
+    {
+        return $this->belongsTo(User::class, 'approver');
+    }
 }

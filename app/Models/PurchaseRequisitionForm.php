@@ -58,6 +58,11 @@ class PurchaseRequisitionForm extends Model
         return $this->belongsTo(Department::class, 'next_department', 'id');
     }
 
+    public function departmentApprover()
+    {
+        return $this->belongsTo(Department::class, 'department', 'id');
+    }
+
     public function positionName()
     {
         return $this->belongsTo(Position::class, 'position', 'id');
