@@ -192,7 +192,7 @@ body {
         calc(100% - 25px) 100%,
         0 100%
     );
-    transition: transform 0.15s ease-in-out;
+    transition: opacity 0.15s ease-in-out;
     pointer-events: none;
     padding: 0.25rem !important;
     padding-right: 2rem !important;
@@ -201,14 +201,11 @@ body {
     pointer-events: auto;
 }
 .tagLabel:hover {
-    transform: scale(1.03);
+    opacity: 0.85;
 }
-.no-scale:hover {
-    transform: none;
-}
-.tagLabel:active {
-    transform: scale(1);
-}
+/* .tagLabel:has(select:focus) {
+    transform: none !important;
+} */
 select[name="department"] {
     font-size: 16px !important;
     padding: 0 !important;
