@@ -55,13 +55,6 @@
             font-weight: medium;
             color: #5E6A75;
         }
-        .circle {
-            height: 45px;
-            width: 45px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
         .tab-link {
             color: white;
         }

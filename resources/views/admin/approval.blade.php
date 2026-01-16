@@ -5,68 +5,6 @@
         .inner-shadow {
             box-shadow: inset 0px 0px 5px rgba(0, 0, 0, 0.25);
         }
-        .tag-main {
-            width: 350px;
-        }
-        .tagLabel {
-            display: inline-flex;
-            width: 300px;
-            user-select: none;
-            background: #1447e6;
-            clip-path: polygon(0 0, 
-            calc(100% - 50px) 0,
-            100% 45%,
-            100% 55%,
-            calc(100% - 50px) 100%,
-            0 100%);
-            transition: transform .15s ease-in-out;
-            pointer-events: none;
-        }
-        .tagLabel * {
-            pointer-events: auto
-        }
-        .tagLabel:hover {
-            transform: scale(1.03);
-        }
-        .tagLabel:active {
-            cursor: grabbing;
-        }
-        select[name="department"] option {
-            color: black;
-        }
-        select[name="department"]:focus {
-            box-shadow: none;
-        }
-        .popClose {
-            width: 35px;
-            height: 35px;
-            transform: translate(0%, -50%);
-            color: #82181a;
-            opacity: 0;
-            transition: all 0.15s ease-in-out;
-            user-select: none;
-            cursor: pointer;
-            pointer-events: auto !important;
-            z-index: 2;
-        }
-        .popClose:hover {
-            opacity: 1;
-        }
-        .popClose:active {
-            opacity: .75;
-        }
-        .upload-pdf-container {
-            border: 2px dashed lightgray;
-            height: 150px;
-            width: 250px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 16px;
-            color: gray;
-            cursor: pointer;
-        }
         #pdf-list {
             list-style-type: none;
         }
@@ -83,9 +21,9 @@
     <x-container pageTitle="Approval Setup">
         <x-section-head headTitle="Approval Process"></x-section-head>
 
-        <div class="row p-3 ">
-            <div class="col-3 card-selector-wrapper">
-                <div class="card pt-3 px-2 pb-1 mb-2 request-card position-relative">
+        <div class="approval-process">
+            <div class="card-selector-wrapper">
+                <div class="col card pt-3 px-2 request-card position-relative">
                     <h5 class="card-title">Request Type</h5>
                     <div class="card-body px-0 pb-1">
                         <select name="request_type" id="request_type" class="form-select mb-2">
@@ -103,8 +41,8 @@
                 </div>
 
 
-                <div class="card pt-3 px-2">
-                    <h5 class="card-title">Add Request</h5>
+                <div class="col card pt-3 px-2">
+                    <h5 class="card-title">Add Request Type</h5>
                     <div class="card-body px-0 pb-2">
                         <form action="{{ route('add.request.type') }}" method="post">
                             @csrf
@@ -115,13 +53,13 @@
                 </div>
             </div>
             <div class="col">
-                <div class="flex-area d-flex flex-column flex-wrap border rounded overflow-x-auto p-4 inner-shadow position-relative" style="height: 350px; row-gap: 16px; column-gap: 16px; background:#f5f5f4;">
+                <div class="flex-area d-flex flex-column flex-wrap border rounded overflow-x-auto inner-shadow position-relative">
                 </div>
             </div>
         </div>
 
         <x-section-head headTitle="Upload PDF Template" :headerButton="true" buttonLabel="Upload"></x-section-head>
-        <div class="row mt-3 mx-3">
+        <div class="mt-3 upload-pdf-wrapper">
             <div class="col upload-pdf-container">
                 Click or Drop PDF Files
                 <input type="file" class="d-none" id="pdf_file" name="pdf_file[]" multiple>
@@ -135,8 +73,9 @@
                 </div>
             </div>
         </div>
-        <div class="row mt-3 mx-3">
-            <ul id="pdf-list" class="col-4">
+        <div class="row mt-3">
+            {{-- <h6 class="fw-bold">Uploaded Files</h6> --}}
+            <ul id="pdf-list">
                 
             </ul>
         </div>
@@ -258,8 +197,9 @@
                     const listContainer = $('#pdf-list');
                     listContainer.empty();
 
-                    const container = $('#pdfView');
-                    container.empty();
+                    const listContainerParent = listContainer.parent();
+                    const pdfListLabel = $('<h6 class="fw-bold">Uploaded Files</h6>');
+                    listContainerParent.prepend(pdfListLabel);
 
                     const files = res.files;
 
@@ -282,10 +222,33 @@
                                 modal.show();
                                 
                                 viewPDF(linkEl, modalViewAttach, '800px');
-                            }
+                            },
+                            class: 'px-3'
+                        })
+                        .css({
+                            height: '50px',
+                            display: 'flex',
+                            gap: '20px',
+                            textDecoration: 'none',
                         });
 
-                        link.text(item.original_name);
+                        const pdfIcon = '<x-pdf-icon></x-pdf-icon>';
+
+                        const divNameWrapper = $('<div class="file-name"></div>');
+                        const itemName = $('<p></p>', {
+                            text: item.original_name,
+                            class: 'mb-0',
+                        });
+                        divNameWrapper.append(itemName);
+
+                        const divDateWrapper = $('<div class="date-uploaded"></div>');
+                        const itemDate = $('<p></p>', {
+                            text: formatDateISO(item.created_at),
+                            class: 'mb-0',
+                        });
+                        divDateWrapper.append(itemDate);
+
+                        link.append(pdfIcon, divNameWrapper, divDateWrapper);
                         listContainer.append(listEl.append(link));
                     });
                 },
@@ -295,6 +258,18 @@
                     console.error('error: ', error);
                 }
             });
+        }
+
+        function formatDateISO(iso) {
+            const date = new Date(iso);
+
+            const formatted = new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+            }).format(date);
+
+            return formatted;
         }
 
         function fetchDataFlow(id) {
@@ -328,7 +303,7 @@
             const mainWrapper = $('<div></div>');
             mainWrapper.addClass('tag-main position-relative');
             const divWrapper = $('<div></div>');
-            divWrapper.addClass('tagLabel align-items-center relative border fs-4 fw-bold text-white p-3 pe-5 shadow-lg position-relative');
+            divWrapper.addClass('tagLabel align-items-center relative border fw-bold text-white shadow-lg position-relative');
             const close = $('<div></div>');
             close.html('&#10006;');
             close.addClass('popClose position-absolute end-0 top-50 rounded bg-danger text-danger-emphasis shadow fs-4 fw-bolder d-flex justify-content-center align-items-center');
@@ -340,11 +315,11 @@
             circleWrapper.addClass('col-3 circle rounded-circle bg-white align-middle text-black');
 
             const circle = $('<span></span>');
-            const dropdownWrapper = $('<div class="col ps-3"></div>');
+            const dropdownWrapper = $('<div class="col dropdown-wrapper"></div>');
 
             const dropDown = $('<select></select>')
                 .attr('name', 'department')
-                .addClass('form-select fs-4 fw-bold bg-transparent border-0 text-white')
+                .addClass('form-select fw-bold bg-transparent border-0 text-white')
                 .css('background-image','none');
                 
             const emptyOpt = $('<option></option>');
