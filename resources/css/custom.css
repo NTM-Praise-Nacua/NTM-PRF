@@ -206,15 +206,15 @@ body {
 /* .tagLabel:has(select:focus) {
     transform: none !important;
 } */
-select[name="department"] {
+.tagLabel select[name="department"] {
     font-size: 16px !important;
     padding: 0 !important;
     padding-left: 0.25rem !important;
 }
-select[name="department"] option {
+.tagLabel select[name="department"] option {
     color: black;
 }
-select[name="department"]:focus {
+.tagLabel select[name="department"]:focus {
     box-shadow: none;
 }
 .circle {
@@ -275,7 +275,7 @@ select[name="department"]:focus {
             0 100%
         );
     }
-    select[name="department"] {
+    .tagLabel select[name="department"] {
         font-size: calc(1.26rem + 0.12vw) !important;
     }
     .dropdown-wrapper {

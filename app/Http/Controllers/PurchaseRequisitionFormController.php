@@ -148,6 +148,7 @@ class PurchaseRequisitionFormController extends Controller
 
     public function savePRF(StorePRFRequest $request)
     {
+        // dd($request->all());
         $prfData = $request->only([
             'date_request',
             'date_needed',
@@ -172,6 +173,7 @@ class PurchaseRequisitionFormController extends Controller
             // $prfData['next_department'] = (int) $prfData['next_department'];
             $PRF = PurchaseRequisitionForm::create($prfData);
             // dd($prfData);
+        // dd('here');
 
             $uploadedFileIds = [];
             foreach ($request->file('upload_pdf') as $file) {

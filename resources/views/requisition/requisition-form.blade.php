@@ -150,7 +150,7 @@
             </div>
         </div>
         <hr class="border border-2 border-black">
-        <form action="{{ route('requisition.form.add') }}" method="POST" class="my-5 needs-validation" enctype="multipart/form-data">
+        <form id="creationForm" action="{{ route('requisition.form.add') }}" method="POST" class="my-5 needs-validation" enctype="multipart/form-data">
             @csrf
             <h2 class="text-center">PURCHASE REQUISITION FORM</h2>
             <div class="row mb-3">
@@ -247,7 +247,7 @@
                 </div>
                 <div class="col">
                     <div class="form-floating">
-                        <input type="text" name="branch" id="branch" class="form-control bg-white @error('branch') is-invalid @enderror" placeholder="Branch" value="Head Office">
+                        <input type="text" name="branch" id="branch" class="form-control bg-white @error('branch') is-invalid @enderror" placeholder="Branch" value="{{ old('branch', 'Head Office') }}">
                         <label for="branch">Branch</label>
                         <div class="invalid-feedback">
                             @error('branch')
@@ -259,12 +259,11 @@
                 <div class="col">
                     <div class="form-floating">
                         <select name="urgency" id="urgency" class="form-select bg-white @error('urgency') is-invalid @enderror">
-                            <option value="" selected hidden>Select Level</option>
-                            <option value="Highest">Highest (1-2 Hours)</option>
-                            <option value="High">High (1-2 Days)</option>
-                            <option value="Medium">Medium (3-6 Days)</option>
-                            <option value="Low">Low (1-2 Weeks)</option>
-                            <option value="Lowest">Lowest (3-4 Weeks)</option>
+                            <option value="Highest" {{ old('urgency', 'Medium') == 'Highest' ? 'selected' : '' }}>Highest (1-2 Hours)</option>
+                            <option value="High" {{ old('urgency', 'Medium') == 'High' ? 'selected' : '' }}>High (1-2 Days)</option>
+                            <option value="Medium" {{ old('urgency', 'Medium') == 'Medium' ? 'selected' : '' }}>Medium (3-6 Days)</option>
+                            <option value="Low" {{ old('urgency', 'Medium') == 'Low' ? 'selected' : '' }}>Low (1-2 Weeks)</option>
+                            <option value="Lowest" {{ old('urgency', 'Medium') == 'Lowest' ? 'selected' : '' }}>Lowest (3-4 Weeks)</option>
                         </select>
                         <label for="urgency">Urgency</label>
                         <div class="invalid-feedback">
@@ -281,7 +280,7 @@
             <div class="request-lists container my-1 d-flex flex-column flex-wrap gap-2 overflow-x-auto">
                 @forelse ($requestTypes as $item)
                     <div class="checkbox-group">
-                        <input type="checkbox" name="request_type" id="request_type{{ $counter }}" class="form-check-input rounded-0 single-check @error('request_type') is-invalid @enderror" value="{{ $item->id }}">
+                        <input type="checkbox" name="request_type" id="request_type{{ $counter }}" class="form-check-input rounded-0 single-check @error('request_type') is-invalid @enderror" value="{{ $item->id }}" {{ old('request_type', '') == $item->id ? 'checked' : '' }} />
                         <label for="request_type{{ $counter }}" class="fs-5 ms-2 form-check-label">{{ $item->name }}</label>
                     </div>
                     @php
@@ -290,7 +289,7 @@
                 @empty
                     <p class="text-center">Error Fetching Request Types</p>
                 @endforelse
-
+                request type
             </div>
             <div class="container mb-2">
                 <div class="invalid-feedback d-block">
@@ -301,7 +300,7 @@
             </div>
 
             <div class="form-floating mb-3">
-                <textarea name="request_details" class="form-control @error('request_details') is-invalid @enderror" placeholder="Request Details" id="request_details" style="height: 130px"></textarea>
+                <textarea name="request_details" class="form-control @error('request_details') is-invalid @enderror" placeholder="Request Details" id="request_details" style="height: 130px">{{ old('request_details', '') }}</textarea>
                 <label for="request_details">Request Details</label>
                 <div class="invalid-feedback d-block">
                     @error('request_details')
@@ -351,24 +350,6 @@
                         </div>
                     </div>
                     <div class="col">
-                        {{-- <div class="col d-flex align-items-center">
-                            <p class="m-0 fs-5 fw-bold">Select Employee</p>
-                        </div>
-                        <select name="assign_employee" id="assign_employee" class="form-select form-select-sm w-75 bg-white @error('assign_employee') is-invalid @enderror">
-                            <option value="" selected hidden>Select Employee</option>
-                        </select>
-                        <div class="invalid-feedback d-block">
-                            @error('assign_employee')
-                            {{ $message }}
-                            @enderror
-                        </div> --}}
-                        @if ($errors->any())
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -408,7 +389,9 @@
         $(document).ready(function(){
             const headerFlow = $('.header-flow');
             const originalChildren = headerFlow.children().clone(true);
+            const defaultType = $('.single-check:checked').val();
 
+            if (defaultType) fetchPRFDetails(defaultType);
 
             $('.single-check').on('change', function(e) {
                 if (!$(this).prop('checked')) {
@@ -549,6 +532,12 @@
 
                 viewPDF(linkEl, modalViewAttach, '800px');
             }
+
+            // $('#creationForm').on('submit', function(e) {
+            //     // e.preventDefault();
+            //     console.log("submitting creation Form");
+            //     // action="{{ route('requisition.form.add') }}"
+            // });
         });
     </script>
 @endpush

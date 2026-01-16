@@ -196,12 +196,15 @@
 
                     const listContainer = $('#pdf-list');
                     listContainer.empty();
-
-                    const listContainerParent = listContainer.parent();
-                    const pdfListLabel = $('<h6 class="fw-bold">Uploaded Files</h6>');
-                    listContainerParent.prepend(pdfListLabel);
-
+                    
                     const files = res.files;
+                    
+                    const listContainerParent = listContainer.parent();
+                    listContainerParent.find('h6.fw-bold').remove();
+                    if (files.length > 0) {
+                        const pdfListLabel = $('<h6 class="fw-bold">Uploaded Files</h6>');
+                        listContainerParent.prepend(pdfListLabel);
+                    }
 
                     files.forEach((item) => {
                         const listEl = $('<li></li>');
