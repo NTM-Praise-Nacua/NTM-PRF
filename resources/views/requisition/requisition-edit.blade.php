@@ -483,7 +483,7 @@
                         @if ($isBetween && $user->id == $requisition->assign_employee)
                             <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
                         @endif
-                        <button type="submit" class="btn btn-sm btn-primary" {{ (($user->id == $requisition->request_by && $user->id != $requisition->assign_employee) || $requisition->assign_employee != $user->id || ($requisition->assign_employee == $user->id && $requisition->status == 0)) ? 'disabled' : '' }}>Submit</button>
+                        <button type="submit" class="btn btn-sm btn-primary" {{ (($user->id == $requisition->request_by && $user->id != $requisition->assign_employee) || $requisition->assign_employee != $user->id || ($requisition->assign_employee == $user->id && $requisition->status == 0) || $requisition->status == 5) ? 'disabled' : '' }}>Submit</button>
                     @endif
                 @endif
                 <button type="button" class="btn btn-sm btn-primary requestStatus">Request Status</button>
@@ -641,9 +641,12 @@
                     
                         departments.forEach((dept, index) => {
                             if (dept === "N/A") {
+                                departments[index] = "Immediate Head";
                                 naIndexes.push(index);
                             }
                         });
+
+                        // console.log('departments: ', departments);
                         
                         // console.log('before files: ', files);
                         // return;
@@ -670,10 +673,10 @@
                 const wrapper = $('#requestStatusContainer');
                 wrapper.empty();
                 
-                console.log("files: ", files);
-                console.log("files length: ", files.length);
-                console.log("files[0] length: ", files[0].length);
-                console.log("files[1] length: ", files[1].length);
+                // console.log("files: ", files);
+                // console.log("files length: ", files.length);
+                // console.log("files[0] length: ", files[0].length);
+                // console.log("files[1] length: ", files[1].length);
                 departments.forEach((name, index) => {
                     const itemEl = $('<div></div>').addClass("accordion-item");
                     
@@ -983,7 +986,7 @@
             $(document).on('click', '.addTextBtn', function() {
                 const modalViewAttach = $('#requestorViewAttach .modal-body .frameWrapper');
 
-                console.log('framewrapper: ', modalViewAttach);
+                // console.log('framewrapper: ', modalViewAttach);
 
                 const textInput = $('<input>', {
                         name: 'textPDFInput[]',
@@ -1091,7 +1094,7 @@
 
             $('.reject-btn').on('click', function() {
                 const isBetween = @json($isBetween);
-                console.log("isBetween: ", isBetween);
+                // console.log("isBetween: ", isBetween);
 
                 // return;
                 if (isBetween) {
