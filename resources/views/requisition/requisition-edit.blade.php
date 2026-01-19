@@ -143,9 +143,7 @@
         $trackerExists = isset($tracker[$index]);
         $rawSubmittedAt = $trackerExists ? $tracker[$index]['submitted_at'] : null;
 
-        // if ($index == 1) {
-        //     dd($tracker[$index], $rawSubmittedAt);
-        // }
+        
 
         if (!$trackerExists) {
             $status = '';
@@ -176,6 +174,10 @@
             $headerName = 'Immediate Head';
         }
 
+        // if ($index == 2) {
+        //     dd($status);
+        // }
+
         $steps[] = [
             'name'  => $headerName,
             'date'  => $displayDate,
@@ -199,6 +201,15 @@
     // dd($steps);
     // dd($nextIndex, $nextDepartment, $nextDepId);
     // dd($isBetween);
+    // dd($approver->toArray());
+    $second_step = false;
+    $assignedEE = $requisition->assign_employee ?? $approver?->id;
+    // if ($requisition->workflow_steps()['1']);
+    // dd($PRFWorkflow->toArray()[1]);
+    if (($tracker[1]['employee_id'] == $user->id) || ($approver?->id == $user->id && $tracker[1]['department_id'] == 0)) {
+        $second_step = true;
+    }
+    // dd($tracker);
 @endphp
 
 @section('content')
@@ -462,7 +473,7 @@
             <hr>
 
             <div class="button-group float-end">
-                @if ($user->id == $approver?->id && $requisition->status == 0)
+                @if ($second_step && $requisition->status == 0)
                     <button type="button" class="btn btn-sm btn-primary approve-btn">Approve</button>
                     <button type="button" class="btn btn-sm btn-danger reject-btn">Reject</button>
                 @else

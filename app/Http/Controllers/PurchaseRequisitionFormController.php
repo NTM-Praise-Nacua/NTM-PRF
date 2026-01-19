@@ -242,15 +242,22 @@ class PurchaseRequisitionFormController extends Controller
             ->skip($skip)
             ->first();
 
-        // dd($skip, $latestTracker);
-
         if ($latestTracker) {
             $latestTracker->submitted_at = now();
             $latestTracker->save();
         }
+
+        $nextDepartment = $request->nextDepartment < 0 ? 0 : $request->nextDepartment;
+
+        if ($nextDepartment == 0) {
+            $user = User::find($latestTracker->employee_id);
+            $empId = $user->approver_id ?? $user->department->departmentApprover->id;
+            // dd($user, $user->department->departmentApprover);
+            // dd($empId);
+        }
         
         $requisition->status = $status;
-        $requisition->next_department = $request->nextDepartment;
+        $requisition->next_department = $nextDepartment;
         $requisition->assign_employee = $empId;
         $requisition->save();
 
@@ -261,7 +268,7 @@ class PurchaseRequisitionFormController extends Controller
         } else {
             RequisitionWorkflowTracker::create([
                 'requisition_id' => $requisition->id,
-                'department_id' => $request->nextDepartment,
+                'department_id' => $nextDepartment,
                 'employee_id' => $empId,
             ]);
         }
@@ -462,10 +469,6 @@ class PurchaseRequisitionFormController extends Controller
                 $isImmediateHead = $row->approverByDepartment?->approver == auth()->user()->id;
                 $sameDepartment = $row->next_department == auth()->user()->department_id;
 
-                // // dd($row->requestor?->approver_id, auth()->user()->id);
-                // return $row->status === 2 ? '---' : ($row->assignedEmployee?->name
-                //     ? $row->assignedEmployee->name
-                //     : (($row->requestor?->approver_id == auth()->user()->id) || $row->status === 0 ? "Immediate Head" : '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>'));
                 $assignContent = $row->assignedEmployee?->name ?? '---';
                 if ($row->status === 0 && $row->next_department === 0 && $assignContent === '---') {
                     // Assigned Employee is Immediate Head if the status is pending, no assigned department & employee
@@ -598,7 +601,8 @@ class PurchaseRequisitionFormController extends Controller
         $user_info = User::with('approver')->find($requisition->request_by);
         // dd($user_info->department->departmentApprover);
         $approver = $user_info->approver ?? $user_info->department->departmentApprover;
-        // dd($approver);
+        // dd($requisition->toArray());
+        // $second_step = 
 
         return view('requisition.requisition-edit', 
             compact('requisition',
@@ -832,7 +836,10 @@ class PurchaseRequisitionFormController extends Controller
         $prf->assign_employee = $request->user_id;
         $prf->save();
 
-        $prfFlowTracker = RequisitionWorkflowTracker::where('requisition_id', $request->prf_id)->latest()->first();
+        $prfFlowTracker = RequisitionWorkflowTracker::where('requisition_id', $request->prf_id)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
         $prfFlowTracker->employee_id = $request->user_id;
         $prfFlowTracker->save();
 
