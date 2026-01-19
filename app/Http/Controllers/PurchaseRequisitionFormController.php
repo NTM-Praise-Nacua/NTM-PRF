@@ -460,11 +460,22 @@ class PurchaseRequisitionFormController extends Controller
             })
             ->editColumn('assign_employee', function ($row) {
                 $isImmediateHead = $row->approverByDepartment?->approver == auth()->user()->id;
+                $sameDepartment = $row->next_department == auth()->user()->department_id;
 
-                // dd($row->requestor?->approver_id, auth()->user()->id);
-                return $row->status === 2 ? '---' : ($row->assignedEmployee?->name
-                    ? $row->assignedEmployee->name
-                    : (($row->requestor?->approver_id == auth()->user()->id) || $row->status === 0 ? "Immediate Head" : '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>'));
+                // // dd($row->requestor?->approver_id, auth()->user()->id);
+                // return $row->status === 2 ? '---' : ($row->assignedEmployee?->name
+                //     ? $row->assignedEmployee->name
+                //     : (($row->requestor?->approver_id == auth()->user()->id) || $row->status === 0 ? "Immediate Head" : '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>'));
+                $assignContent = $row->assignedEmployee?->name ?? '---';
+                if ($row->status === 0 && $row->next_department === 0 && $assignContent === '---') {
+                    // Assigned Employee is Immediate Head if the status is pending, no assigned department & employee
+                    $assignContent = 'Immediate Head';
+                } else if ($assignContent === '---' && ($isImmediateHead || $sameDepartment) && $row->status !== 2) {
+                    // Assigned Employee becomes a button if there's no assigned employee, the logged user is the approver of next department or a member of the next department
+                    $assignContent = '<a href="javascript:void(0);" class="btn btn-sm btn-light '. ($isImmediateHead ? 'btn-assignto' : 'btn-assign') . '" data-requisition-id="' . $row->id . '">Assign to '. ($isImmediateHead ? '' : 'Me') . '</a>';
+                }
+
+                return $assignContent;
             })
             ->addColumn('actions', function ($row) {
                 return '<a href="'.route('requisition.edit', $row->id).'" class="btn btn-sm btn-info">View</a>';
