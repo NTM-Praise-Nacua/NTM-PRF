@@ -19,8 +19,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $departments = Department::where('isActive', 1)->get();
-        $positions = Position::all();
+        $departments = Department::where('isActive', 1)->orderBy('name', 'ASC')->get();
+        $positions = Position::orderBy('name', 'ASC')->get();
         $roles = Role::where('is_active', 1)->get();
         $approvers = collect();
         return view("users.list", compact('departments', 'positions','roles', 'approvers'));

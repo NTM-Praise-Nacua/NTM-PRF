@@ -62,7 +62,7 @@
         <div class="mt-3 upload-pdf-wrapper">
             <div class="col upload-pdf-container">
                 Click or Drop PDF Files
-                <input type="file" class="d-none" id="pdf_file" name="pdf_file[]" multiple>
+                <input type="file" class="d-none" id="pdf_file" name="pdf_file[]" accept="application/pdf" multiple>
             </div>
             <div class="col">
                 <div class="file-details">

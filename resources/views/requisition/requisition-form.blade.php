@@ -322,7 +322,7 @@
             <div class="upload-pdf-group row mb-3">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
-                    <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" multiple>
+                    <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" accept="application/pdf" multiple>
                     <div class="invalid-feedback d-block">
                         @error('upload_pdf')
                         {{ $message }}
