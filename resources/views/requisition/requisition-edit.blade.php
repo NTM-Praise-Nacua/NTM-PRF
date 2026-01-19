@@ -140,43 +140,20 @@
     // dd($PRFWorkflow->toArray());
     // dd($requisition->toArray());
     foreach ($PRFWorkflow as $index => $item) {
-        $calculatedIndex = $index;
+        $trackerExists = isset($tracker[$index]);
+        $rawSubmittedAt = $trackerExists ? $tracker[$index]['submitted_at'] : null;
 
-        if ($index >= 1 && $requisition->status != 0) $calculatedIndex -= 1;
-
-        // if ($index == 0) {
-        //     dd($calculatedIndex);
+        // if ($index == 1) {
+        //     dd($tracker[$index], $rawSubmittedAt);
         // }
-        $trackerExists = isset($tracker[$calculatedIndex]);
-        $rawSubmittedAt = ($trackerExists ? ($tracker[$calculatedIndex]['submitted_at'] ? $tracker[$calculatedIndex]['submitted_at'] : null) : null);
 
         if (!$trackerExists) {
             $status = '';
         } elseif ($rawSubmittedAt === null) {
             $status = $requisition->status == 2 ? 'rejected' : 'pending';
-            // dd($PRFWorkflow[$index]);
-            $workFlowIndex = $index - 1;
-            if ($workFlowIndex < 0) {
-                foreach ($PRFWorkflow as $indx => $row) {
-                    if ($row['ordering'] == $workFlowIndex) {
-                        $workFlowIndex = $indx;
-                        break;
-                    }
-                }
-            }
-            $currentStep = $requisition->status == 2 ? $PRFWorkflow[$workFlowIndex]['id'] : $item->id;
+            $currentStep = $requisition->status == 2 ? $PRFWorkflow[$index - 1]['id'] : $item->id;
         } else {
             $status = 'completed';
-        }
-
-        // if ($index == 2) {
-            // dd('status', $status);
-            // dd('tracker', $tracker[$calculatedIndex]);
-            // dd('rawSubmittedAt', $rawSubmittedAt);
-        // }
-
-        if ($index == 1 && $status == '') {
-            $status = $requisition->status == 2 ? 'rejected' : 'pending';
         }
 
         if ($status === 'completed') {
@@ -187,20 +164,20 @@
             $displayDate = '---';
         }
 
-        $name = $item->department->shortcut ?? '---';
-        if ($item['ordering'] == -2) {
-            $name = 'Requestor';
-            $displayDate = (new DateTime($requisition->created_at))->format("D, F j, h:i a");
-            $status = 'completed';
-        } else if ($item['ordering'] == -1) {
-            $name = 'Immediate Head';
-            // dd($status);
-            $status = $status == '' ? 'pending' : $status;
-            $displayDate = $status == 'pending' ? date("D, F j, h:i a") : $displayDate;
+        // if ($trackerExists && $tracker[$index]['employee_id'] == null && $rawSubmittedAt && $requisition->status == 2) {
+        //     $status = 'rejected';
+        //     $displayDate = (new DateTime($rawSubmittedAt))->format("D, F j, h:i a");
+        // }
+
+        $headerName = $item->department?->shortcut ?? '---';
+        if ($item->ordering == -2) {
+            $headerName = 'Requestor';
+        } else if ($item->ordering == -1) {
+            $headerName = 'Immediate Head';
         }
 
         $steps[] = [
-            'name'  => $name,
+            'name'  => $headerName,
             'date'  => $displayDate,
             'status'=> $status,
         ];
@@ -215,7 +192,7 @@
         }
     }
 
-    $nextIndex = array_key_last($tracker) + ($requisition->status == 2 ? 0 : 1) + 1;
+    $nextIndex = array_key_last($tracker) + ($requisition->status == 2 ? 0 : 1);
     $nextDepartment = optional($PRFWorkflow->get($nextIndex))?->toArray();
 
     $nextDepId = $nextDepartment ? $nextDepartment['ordering'] : null;
@@ -656,11 +633,16 @@
                                 naIndexes.push(index);
                             }
                         });
-
+                        
+                        // console.log('before files: ', files);
+                        // return;
                         for (let i = naIndexes.length - 1; i >= 0; i--) {
                             files.splice(naIndexes[i], 0, []);
                         }
+                        // console.log('after files: ', files);
 
+                        // console.log('response: ', res);
+                        // console.log('naIndexes: ', naIndexes);
                         createRequestStatusElements(departments, files);
 
                         const modalEl = document.getElementById('requestStatusModal');
@@ -1100,6 +1082,7 @@
                 const isBetween = @json($isBetween);
                 console.log("isBetween: ", isBetween);
 
+                // return;
                 if (isBetween) {
                     const form = $(this).closest('form');
                     const inputStatus = $('<input>', {

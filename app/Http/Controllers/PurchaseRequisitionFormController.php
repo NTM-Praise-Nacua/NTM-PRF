@@ -185,9 +185,20 @@ class PurchaseRequisitionFormController extends Controller
 
             $PRF->files()->attach($uploadedFileIds);
 
+            // Insertion of requisiton list should always insert a double row for the tracker table
+            // First step of the process flow will always be the requestor
             RequisitionWorkflowTracker::create([
                 'requisition_id' => $PRF->id,
-                'department_id' => $PRF->next_department,
+                'department_id' => 0,
+                'employee_id' => $PRF->request_by,
+                'submitted_at' => now(),
+            ]);
+
+            // If the passed "next_department" is negative then it means it's the requestor's department
+            $next_department = $PRF->next_department < 0 ? $PRF->department : $PRF->next_department;
+            RequisitionWorkflowTracker::create([
+                'requisition_id' => $PRF->id,
+                'department_id' => $next_department,
                 // 'employee_id' => $PRF->assign_employee,
             ]);
         });
@@ -226,11 +237,12 @@ class PurchaseRequisitionFormController extends Controller
 
         $skip = $status == 2 ? 1 : 0;
         $latestTracker = $requisition->tracker()
-            ->latest()
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->skip($skip)
             ->first();
 
-        // dd($request->nextDepartment);
+        // dd($skip, $latestTracker);
 
         if ($latestTracker) {
             $latestTracker->submitted_at = now();
@@ -624,26 +636,32 @@ class PurchaseRequisitionFormController extends Controller
             
             $requisition->files()->attach($uploadedFileIds);
         } else if ($request->exists('status')) {
+            // For Reject Status
             $remarks = $request->input('remarks', null);
-            
-            $latestTracker = $requisition->tracker()->latest()->skip(1)->first();
-            $next_department = $latestTracker->department_id ?? null;
-            $assign_employee = $latestTracker->employee_id ?? null;
-            
-            if($requisition->toArray()['id'] == $request->requisition_id && in_array($requisition->status, [0, 1])) {
-                $next_department = $requisition->toArray()['department'];
-                $assign_employee = null;
-            }
 
-            // dd($request->all(),$requisition->toArray(), $latestTracker->toArray(), $next_department, $assign_employee);
-            // dd($requisition->requestor->approver_id,  $requisition->approverByDepartment->approver);
-            if ($latestTracker && $latestTracker->department_id === 0) {
-                $next_department = $requisition->requestor->approver_id ?? $requisition->approverByDepartment->approver;
+            $latestTracker = null;
+            $next_department = null;
+            $assign_employee = null;
+            // checks if requisition status is Pending/Approved
+            if($requisition->toArray()['id'] == $request->requisition_id && in_array($requisition->status, [0, 1])) {
+                // assign back to requestor's department
+                $next_department = $requisition->toArray()['department'];
+            } else {
+                // get 2nd latestTracker
+                $latestTracker = $requisition->tracker()
+                    ->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc')
+                    ->skip(1)
+                    ->first();
+
+                $next_department = $latestTracker->department_id ?? null;
+                $assign_employee = $latestTracker->employee_id ?? null;
             }
+            
             $requisition->next_department = $next_department;
             $requisition->assign_employee = $assign_employee;
             $requisition->remarks = $remarks;
-            $requisition->status = 2;
+            $requisition->status = 2; // reject
             $requisition->save();
         } else {
             // Approve
@@ -745,13 +763,17 @@ class PurchaseRequisitionFormController extends Controller
     {
         $requisition = PurchaseRequisitionForm::with('tracker.department')->find($request->id);
 
+        // dd($requisition->toArray(), $requisition->departmentName->toArray());
         $requestorDepartment = [$requisition->departmentName->shortcut ?? 'N/A'];
 
         $workflowDepartments = $requisition->tracker->sortBy('id')->map(function($step) {
             return $step->department->shortcut ?? 'N/A';
         })->toArray();
+        // dd($workflowDepartments);
 
-        $departments = array_merge($requestorDepartment, $workflowDepartments);
+        // $departments = array_merge($requestorDepartment, $workflowDepartments);
+        $departments = $workflowDepartments;
+        $departments[0] = $requestorDepartment; // First Index of step flow will always be the requestor's
 
         $files = $requisition->files()->orderBy('created_at','asc')->get()->toArray();
         
@@ -774,6 +796,8 @@ class PurchaseRequisitionFormController extends Controller
         if (!empty($currentGroup)) {
             $grouped[] = $currentGroup;
         }
+
+        // dd($files);
 
         $return = [            
             'status' => 'success',
