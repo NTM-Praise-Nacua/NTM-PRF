@@ -593,8 +593,23 @@ class PurchaseRequisitionFormController extends Controller
         $requestTypes = RequestType::orderBy('id', 'asc')->get();
         $departments = Department::where('isActive', 1)->get();
 
-        $attachments = $requisition->attachmentsByPRF()->where('uploaded_by', $requisition->request_by)->get();
+        // $attachments = $requisition->attachmentsByPRF()->where('uploaded_by', $requisition->request_by)->get();
+        $files = $requisition->files()
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->toArray();
 
+        // dd($files);
+
+        [$grouped, $currentGroup] = $this->groupAttachments($files);
+
+        if (!empty($currentGroup)) {
+            $grouped[] = $currentGroup;
+            $attachments = $grouped[0];
+        }
+
+        // dd($attachments);
+        // dd($attachments->toArray());
         $PRFWorkflow = $requisition->workflowSteps()->orderBy('id', 'asc')->get();
         $tracker = $requisition->tracker()->orderBy('id', 'asc')->get()->toArray();
 
@@ -613,6 +628,34 @@ class PurchaseRequisitionFormController extends Controller
                 'tracker',
                 'approver'
             ));
+    }
+
+    public function groupAttachments($files)
+    {
+        $grouped = [];
+        $currentGroup = [];
+        $previousUploader = null;
+
+        foreach ($files as $index => $file) {
+            if ($file['uploaded_by'] !== $previousUploader) {
+                if (!empty($currentGroup)) {
+                    $grouped[] = $currentGroup;
+                }
+                $currentGroup = [$file];
+                $previousUploader = $file['uploaded_by'];
+                
+            } else {
+                $currentGroup[] = $file;
+            }
+
+            // if ($index == 3) {
+            //     dd($file, $file['uploaded_by'] !== $previousUploader, !empty($currentGroup), $currentGroup, $previousUploader, $grouped);
+            // }
+        }
+
+        // dd($grouped, $currentGroup);
+
+        return [$grouped, $currentGroup];
     }
 
     /**
@@ -791,28 +834,15 @@ class PurchaseRequisitionFormController extends Controller
         $departments[0] = $requestorDepartment; // First Index of step flow will always be the requestor's
 
         $files = $requisition->files()->orderBy('created_at','asc')->get()->toArray();
+        // dd($files);
         
-        $grouped = [];
-        $currentGroup = [];
-        $previousUploader = null;
-
-        foreach ($files as $file) {
-            if ($file['uploaded_by'] !== $previousUploader) {
-                if (!empty($currentGroup)) {
-                    $grouped[] = $currentGroup;
-                }
-                $currentGroup = [$file];
-                $previousUploader = $file['uploaded_by'];
-            } else {
-                $currentGroup[] = $file;
-            }
-        }
+        [$grouped, $currentGroup] = $this->groupAttachments($files);
 
         if (!empty($currentGroup)) {
             $grouped[] = $currentGroup;
         }
 
-        // dd($files);
+        // dd($grouped);
 
         $return = [            
             'status' => 'success',

@@ -408,7 +408,7 @@
                         <div class="attachment-list p-1d-flex flex-column flex-wrap gap-2" style="max-height: 100px">
                             @forelse ($attachments as $attachment)
                                 <div>
-                                    <a href="javascript:void(0);" data-src="{{ asset('storage/'. $attachment->path) }}" data-storedname="{{ $attachment->stored_name }}">{{ $attachment->original_name }}</a>
+                                    <a href="javascript:void(0);" data-src="{{ asset('storage/'. $attachment['path']) }}" data-storedname="{{ $attachment['stored_name'] }}">{{ $attachment['original_name'] }}</a>
                                 </div>
                             @empty
                                 No attachments...
@@ -646,7 +646,7 @@
                             }
                         });
 
-                        // console.log('departments: ', departments);
+                        console.log('response: ', res);
                         
                         // console.log('before files: ', files);
                         // return;
