@@ -137,8 +137,11 @@
     $steps = [];
 
     // dd('tracker', $tracker);
+    // dd('tracker')
     // dd($PRFWorkflow->toArray());
     // dd($requisition->toArray());
+    // dd(!$requisition->remarks);
+
     foreach ($PRFWorkflow as $index => $item) {
         $trackerExists = isset($tracker[$index]);
         $rawSubmittedAt = $trackerExists ? $tracker[$index]['submitted_at'] : null;
@@ -207,9 +210,10 @@
     // if ($requisition->workflow_steps()['1']);
     // dd($PRFWorkflow->toArray()[1]);
     if (($tracker[1]['employee_id'] == $user->id) || ($approver?->id == $user->id && $tracker[1]['department_id'] == 0)) {
-        $second_step = true;
+        $second_step = true; // logged user is the assigned user for 2nd step
     }
-    // dd($tracker);
+    // dd($currentStep);
+    // dd($second_step);
 @endphp
 
 @section('content')
@@ -453,11 +457,11 @@
                 </div>
             </div>
 
-            @if (($isBetween && $user->id == $requisition->assign_employee) || !$requisition->remarks)
+            @if ($isBetween || ($requisition->status == 2 && $requisition->remarks))
             <div class="mb-3">
                 <h5>Remarks <span class="fs-6 fw-normal fst-italic">(optional)</span></h5>
                 <div class="form-floating w-50" style="min-width: 300px;">
-                    <textarea id="remarks" name="remarks"  class="form-control" placeholder="Remarks" style="height: 130px"  {{ $user->id == $requisition->assign_employee ? '' : 'disabled' }}>{{ $requisition->remarks }}</textarea>
+                    <textarea id="remarks" name="remarks"  class="form-control" placeholder="Remarks" style="height: 130px"  {{ $requisition->status == 2 || ($isBetween && $user->id != $requisition->assign_employee && !$second_step) || ($second_step && count($tracker) > 2) ? 'disabled' : '' }}>{{ $requisition->remarks }}</textarea>
                     <label for="remarks">Remarks</label>
                 </div>
             </div>

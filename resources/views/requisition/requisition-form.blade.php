@@ -289,7 +289,6 @@
                 @empty
                     <p class="text-center">Error Fetching Request Types</p>
                 @endforelse
-                request type
             </div>
             <div class="container mb-2">
                 <div class="invalid-feedback d-block">

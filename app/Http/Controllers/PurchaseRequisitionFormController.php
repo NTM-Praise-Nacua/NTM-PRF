@@ -256,6 +256,7 @@ class PurchaseRequisitionFormController extends Controller
             // dd($empId);
         }
         
+        $requisition->remarks = null;
         $requisition->status = $status;
         $requisition->next_department = $nextDepartment;
         $requisition->assign_employee = $empId;
@@ -681,6 +682,7 @@ class PurchaseRequisitionFormController extends Controller
                 $latestTracker->save();
             }
     
+            $requisition->remarks = null;
             $requisition->status = 4;
             $requisition->next_department = $requisition->department;
             $requisition->assign_employee = $requisition->request_by;
@@ -749,6 +751,7 @@ class PurchaseRequisitionFormController extends Controller
                 $assign_employee = 45;  // Jojel Bautista
             }
                 
+            $requisition->remarks = null;
             $requisition->status = 3;
             $requisition->next_department = $request->department_id;
             $requisition->assign_employee = $assign_employee;
