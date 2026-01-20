@@ -345,10 +345,13 @@
                     success: function (response) {
                         const res = JSON.parse(response);
 
-                        alertMessage('Assigned Succesfully', 'success', '', false, null, true);
-                        setTimeout(() => {
-                            tableDraw();
-                        }, 1500);
+                        alertMessage(res.message, res.status, '', false, null, true);
+
+                        if (res.status === 'success') {
+                            setTimeout(() => {
+                                tableDraw();
+                            }, 1500);
+                        }
                     }, error: function (xhr) {
                         console.error('error: ', xhr);
                     }

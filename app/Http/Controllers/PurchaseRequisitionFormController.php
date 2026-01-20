@@ -866,20 +866,29 @@ class PurchaseRequisitionFormController extends Controller
         ]);
 
         $prf = PurchaseRequisitionForm::find($request->prf_id);
-        $prf->assign_employee = $request->user_id;
-        $prf->save();
 
-        $prfFlowTracker = RequisitionWorkflowTracker::where('requisition_id', $request->prf_id)
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->first();
-        $prfFlowTracker->employee_id = $request->user_id;
-        $prfFlowTracker->save();
+        if (!$prf->assign_employee) {
+            $prf->assign_employee = $request->user_id;
+            $prf->save();
 
-        return json_encode([
-            'status' => 'success',
-            'message' => 'PRF Assigned',
-        ]);
+            $prfFlowTracker = RequisitionWorkflowTracker::where('requisition_id', $request->prf_id)
+                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
+                ->first();
+            $prfFlowTracker->employee_id = $request->user_id;
+            $prfFlowTracker->save();
+    
+            return json_encode([
+                'status' => 'success',
+                'message' => 'Assigned Successfully!',
+            ]);
+        } else {
+            return json_encode([
+                'status' => 'warning',
+                'message' => 'PRF already assigned!',
+            ]);
+        }
+
     }
 
     /**
