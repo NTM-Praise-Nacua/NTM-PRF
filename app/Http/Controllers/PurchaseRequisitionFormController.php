@@ -589,6 +589,8 @@ class PurchaseRequisitionFormController extends Controller
      */
     public function edit(PurchaseRequisitionForm $requisition)
     {
+        $this->authorize('edit', $requisition);
+
         $requisition->load(['requestType', 'attachmentsByPRF', 'workflowSteps']);
         
         $requestTypes = RequestType::orderBy('id', 'asc')->get();
