@@ -744,30 +744,30 @@
                 const userId = {{ $user->id }};
                 const requestBy = {{ $requisition->request_by }};
 
-                if (requestStatus == 0 && userId == requestBy) {
-                    editPDF(modalViewAttach);
+                // if (requestStatus == 0 && userId == requestBy) {
+                //     editPDF(modalViewAttach);
 
-                    pdfjsLib.getDocument(url).promise.then((pdf) => {
-                        pdf.getPage(1).then(page => {
-                            window.realPdfWidth = page.view[2];
-                            window.realPdfHeight = page.view[3];
+                //     pdfjsLib.getDocument(url).promise.then((pdf) => {
+                //         pdf.getPage(1).then(page => {
+                //             window.realPdfWidth = page.view[2];
+                //             window.realPdfHeight = page.view[3];
 
-                            scale = 1.5;
-                            const viewport = page.getViewport({scale});
-                            const canvas = document.getElementById('pdf-canvas');
-                            const context = canvas.getContext('2d');
+                //             scale = 1.5;
+                //             const viewport = page.getViewport({scale});
+                //             const canvas = document.getElementById('pdf-canvas');
+                //             const context = canvas.getContext('2d');
                             
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
+                //             canvas.height = viewport.height;
+                //             canvas.width = viewport.width;
                             
-                            page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
-                                enableClickMarkers(canvas, context, scale);
-                            });
-                        });
-                    });
-                } else {
+                //             page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
+                //                 enableClickMarkers(canvas, context, scale);
+                //             });
+                //         });
+                //     });
+                // } else {
                     viewPDF(linkEl, modalViewAttach, '800px');
-                }
+                // }
             });
 
             // ====== FOR CUSTOM EDIT PDF =======start
