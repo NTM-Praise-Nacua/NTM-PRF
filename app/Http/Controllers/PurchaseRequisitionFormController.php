@@ -442,14 +442,33 @@ class PurchaseRequisitionFormController extends Controller
             })
             ->editColumn('status', function ($row) {
                 $status = [
-                    0 => 'Pending',
-                    1 => 'Approved',
-                    2 => 'Rejected',
-                    3 => 'In Progress',
-                    4 => 'Executed',
-                    5 => 'Completed',
+                    0 => [
+                        'status' => 'Pending',
+                        'class' => 'highlight-pending',
+                    ],
+                    1 => [
+                        'status' => 'Approved',
+                        'class' => 'highlight-approved',
+                    ],
+                    2 => [
+                        'status' => 'Rejected',
+                        'class' => 'highlight-rejected',
+                    ],
+                    3 => [
+                        'status' => 'In Progress',
+                        'class' => 'highlight-inprogress',
+                    ],
+                    4 => [
+                        'status' => 'Executed',
+                        'class' => 'highlight-executed',
+                    ],
+                    5 => [
+                        'status' => 'Completed',
+                        'class' => 'highlight-completed',
+                    ],
                 ];
-                return $status[$row->status];
+
+                return '<div class="d-flex justify-content-center align-items-center h-100"><span class="shadow-sm px-2 py-1 rounded-pill '. $status[$row->status]['class'] .' position-relative status-tab">' . $status[$row->status]['status'] . '</span></div>';
             })
             ->editColumn('request_by', function ($row) {
                 return $row->requestBy->name;
@@ -484,7 +503,7 @@ class PurchaseRequisitionFormController extends Controller
             ->addColumn('actions', function ($row) {
                 return '<a href="'.route('requisition.edit', $row->id).'" class="btn btn-sm btn-info">View</a>';
             })
-            ->rawColumns(['assign_employee', 'actions'])
+            ->rawColumns(['status', 'assign_employee', 'actions'])
             ->make(true);
     }
 

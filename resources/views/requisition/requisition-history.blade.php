@@ -2,24 +2,52 @@
 
 @push('css')
     <style>
-        .highlight-pending td {
-            background: #FFF9C4 !important;
+        .status-tab {
+            position: relative;
+            background-image: linear-gradient(/* chrome */ hsla(0, 0%, 100%, 0.6), hsla(0, 0%, 100%, 0) 48%, hsla(0, 0%, 0%, 0) 0, hsla(0, 0%, 100%, 0.2));
+            font-size: 12px;
         }
-        .highlight-approved td {
-            background: #C8E6C9 !important;
+        .status-tab::before {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            top: 2px;
+            height: 11px;
+            border-radius: 15px;
+            background: linear-gradient(hsla(0, 0%, 100%, 0.8), hsla(0, 0%, 100%, 0));
         }
-        .highlight-rejected td {
-            background: #FFCDD2 !important;
+        /* .highlight-pending td {
+            background: #FFF9C4 !important; */
+        .highlight-pending {
+            /* background: #ffd8A8; */
+            background: #FFF176 !important;
         }
-        .highlight-inprogress td {
+        /* .highlight-approved td { */
+        .highlight-approved {
+            background: #81C784 !important;
+        }
+        /* .highlight-rejected td {
+            background: #FFCDD2 !important; */
+        .highlight-rejected {
+            background: #ff0019 !important; 
+            color: white;
+            /* background: #ffb3ba; */
+        }
+        /* .highlight-inprogress td { */
+        .highlight-inprogress {
             background: #69BFFF !important;
         }
-        .highlight-executed td {
-            background: #B2EBF2 !important;
+        /* .highlight-executed td { */
+        .highlight-executed {
+            background: #4DD0E1 !important;
         }
-        .highlight-completed td {
-            background: #28A745 !important;
+        /* .highlight-completed td { */
+        .highlight-completed {
+            background: #2E7D32 !important;
             color: white !important;
+            /* background: #ffffba; */
         }
         .single-line-column {
             white-space: nowrap;
@@ -142,34 +170,34 @@
                     }
                 ],
                 rowCallback: function(row, data, index) {
-                    if (data.status == "Pending" && data.requestor_id != {{ auth()->user()->id }}) {
-                        $(row).addClass('highlight-pending');
-                    } else if (data.status == "Approved") {
-                        $(row).addClass('highlight-approved');
-                    } else if (data.status == "Rejected") {
-                        $(row).addClass('highlight-rejected');
-                    } else if (data.status == "In Progress") {
-                        $(row).addClass('highlight-inprogress');
-                    } else if (data.status == "Executed") {
-                        $(row).addClass('highlight-executed');
-                    } else if (data.status == "Completed") {
-                        $(row).addClass('highlight-completed');
-                    }
+                    // if (data.status == "Pending" && data.requestor_id != {{ auth()->user()->id }}) {
+                    //     $(row).addClass('highlight-pending');
+                    // } else if (data.status == "Approved") {
+                    //     $(row).addClass('highlight-approved');
+                    // } else if (data.status == "Rejected") {
+                    //     $(row).addClass('highlight-rejected');
+                    // } else if (data.status == "In Progress") {
+                    //     $(row).addClass('highlight-inprogress');
+                    // } else if (data.status == "Executed") {
+                    //     $(row).addClass('highlight-executed');
+                    // } else if (data.status == "Completed") {
+                    //     $(row).addClass('highlight-completed');
+                    // }
 
-                    var cell0 = $('td:eq(0)', row).css('padding', '15px');
-                    var cell1 = $('td:eq(1)', row).css('padding', '15px');
-                    var cell2 = $('td:eq(2)', row).css('padding', '15px');
-                    var cell3 = $('td:eq(3)', row).css('padding', '15px');
-                    var cell4 = $('td:eq(4)', row).css('padding', '15px');
-                    var cell5 = $('td:eq(5)', row).css('padding', '15px');
-                    var cell6 = $('td:eq(6)', row).css('padding', '15px');
-                    var cell7 = $('td:eq(7)', row).css('padding', '15px');
-                    var cell8 = $('td:eq(8)', row).css('padding', '15px');
-                    var cell9 = $('td:eq(9)', row).css('padding', '15px');
-                    var cell10 = $('td:eq(10)', row).css('padding', '15px');
-                    var cell11 = $('td:eq(11)', row).css('padding', '15px');
-                    var cell12 = $('td:eq(12)', row).css('padding', '15px');
-                    var cell13 = $('td:eq(13)', row).css('padding', '15px');
+                    var cell0 = $('td:eq(0)', row).css('padding', '15px'); // no
+                    var cell1 = $('td:eq(1)', row).css('padding', '15px'); // request type
+                    var cell2 = $('td:eq(2)', row).css('padding', '15px'); // date req
+                    var cell3 = $('td:eq(3)', row).css('padding', '15px'); // date need
+                    var cell4 = $('td:eq(4)', row).css('padding', '15px'); // status
+                    var cell5 = $('td:eq(5)', row).css('padding', '15px'); // req by
+                    var cell6 = $('td:eq(6)', row).css('padding', '15px'); // dep
+                    var cell7 = $('td:eq(7)', row).css('padding', '15px'); // branch
+                    var cell8 = $('td:eq(8)', row).css('padding', '15px'); // urgncy
+                    var cell9 = $('td:eq(9)', row).css('padding', '15px'); // req det
+                    var cell10 = $('td:eq(10)', row).css('padding', '15px'); // ass
+                    // var cell11 = $('td:eq(11)', row).css('padding', '15px');
+                    // var cell12 = $('td:eq(12)', row).css('padding', '15px');
+                    // var cell13 = $('td:eq(13)', row).css('padding', '15px');
                 }
             });
 
