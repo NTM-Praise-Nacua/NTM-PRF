@@ -38,15 +38,15 @@
         }
         /* Transfer to custom.css ======= END */
 
-        #usersDropdown {
+        /* #usersDropdown {
             background: #033D5E;
-        }
+        } */
         #usersDropdown .nav-item {
             border-radius: 5px;
         }
-        #usersDropdown .nav-item:hover {
+        /* #usersDropdown .nav-item:hover {
             background: #024a70;
-        }
+        } */
         .footer {
             height: 50px;
             min-height: 50px;
@@ -62,7 +62,7 @@
             opacity: .5;
             background: #005380;
         } */
-        .active-current, .tab-link:not(.active-current):hover {
+        #usersDropdown .nav-item:hover, .active-current, .tab-link:not(.active-current):hover {
             background: rgb(255, 255, 255, 0.1) !important;
         }
         .active-current:hover, {
@@ -76,7 +76,8 @@
             float: left;
         }
 
-        .primary-color {
+        .primary-color,
+        #usersDropdown {
             background-color: #003A77;
         }
         .main {
