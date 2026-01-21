@@ -64,8 +64,11 @@ body {
     top: 0;
     left: 0;
     z-index: 15;
-    transition: width 0.15s ease-in-out, min-width 0.15s ease-in-out,
-        left 0.15s ease-in-out, position 0.15s ease-in-out;
+    transition:
+        width 0.15s ease-in-out,
+        min-width 0.15s ease-in-out,
+        left 0.15s ease-in-out,
+        position 0.15s ease-in-out;
 }
 .sidebar-close {
     width: 0;
@@ -238,6 +241,44 @@ body {
     z-index: 2;
 }
 
+.table-wrapper {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-section {
+    gap: 10px;
+}
+.filter-section .btn-add {
+    margin-left: 0;
+    margin-right: 0;
+    z-index: 5;
+    width: 100%;
+}
+.filter-section,
+div:has(> select#filter-status),
+div:has(> input#filter-date_requested),
+div:has(> select#filter-formsby) {
+    margin-left: 0;
+    margin-right: 0;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#prf-table_wrapper {
+    width: 100% !important;
+}
+
+select#filter-status,
+input#filter-date_requested,
+input#filter-formsby,
+input[type="search"] {
+    float: inline-end;
+}
+
 @media (min-width: 375px) {
     .upload-pdf-container {
         width: 250px;
@@ -306,6 +347,25 @@ body {
     .popClose:active {
         opacity: 0.75;
     }
+
+    .table-filters {
+        display: block;
+    }
+
+    .filter-section {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    .filter-section .btn-add,
+    div:has(> select#filter-status),
+    div:has(> input#filter-date_requested),
+    div:has(> select#filter-formsby) {
+        float: inline-end;
+        width: 45%;
+        display: block;
+    }
 }
 @media (min-width: 1024px) {
     .sidebar {
@@ -331,6 +391,17 @@ body {
         margin-right: 1rem !important;
         margin-left: 1rem !important;
     }
+    select#filter-status,
+    input#filter-date_requested {
+        margin-left: 5px;
+    }
+
+    .filter-section .btn-add,
+    div:has(> select#filter-status),
+    div:has(> input#filter-date_requested),
+    div:has(> select#filter-formsby) {
+        width: auto !important;
+    }
 }
 @media (min-width: 1280px) {
     .card-selector-wrapper {
@@ -340,6 +411,18 @@ body {
     .approval-process {
         flex-direction: row;
         gap: 10px;
+    }
+
+    .table-wrapper,
+    .filter-section {
+        display: block;
+    }
+
+    div:has(> select#filter-status),
+    div:has(> input#filter-date_requested),
+    div:has(> select#filter-formsby) {
+        margin-left: 0.25rem !important;
+        margin-right: 0.25rem !important;
     }
 }
 

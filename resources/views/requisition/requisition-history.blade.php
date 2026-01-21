@@ -60,37 +60,39 @@
 
 @section('content')
     <x-container pageTitle="PRF History">
-        <div class="">
-            @if (auth()->user()->id != 1)
-                <a href="{{ route('requisition.form') }}" class="btn btn-sm btn-primary float-end position-relative" style="z-index: 5;">Add Request</a>
-            @endif
-
-            <div class="float-end position-relative mx-2" style="z-index: 5;">
-                <label for="filter-status" style="white-space: nowrap; text-align:left;">Status: </label>
-                <select class="form-select form-select-sm d-inline" name="filter-status" id="filter-status" style="width: auto;">
-                    <option value="" selected>All</option>
-                    <option value="0">Pending</option>
-                    <option value="1">Approved</option>
-                    <option value="2">Rejected</option>
-                    <option value="3">In Progress</option>
-                    <option value="4">Executed</option>
-                    <option value="5">Completed</option>
-                </select>
-            </div>
-
-            <div class="float-end position-relative mx-2" style="z-index: 5;">
-                <label for="filter-status" style="white-space: nowrap; text-align:left;">Date Requested From: </label>
-                <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ now()->startOfMonth()->format('Y-m-d') }}">
-            </div>
-
-            @if (auth()->user()->id != 1)
-                <div class="float-end position-relative mx-2" style="z-index: 5;">
-                    <select class="form-select form-select-sm d-inline" name="filter-formsby" id="filter-formsby">
-                        <option value="1">Others</option>
-                        <option value="0">My PRF</option>
+        <div class="table-wrapper">
+            <div class="filter-section">
+                @if (auth()->user()->id != 1)
+                    <a href="{{ route('requisition.form') }}" class="btn-add btn btn-sm btn-primary position-relative">Add Request</a>
+                @endif
+    
+                <div class="position-relative">
+                    <label for="filter-status" style="white-space: nowrap; text-align:left;">Status: </label>
+                    <select class="form-select form-select-sm d-inline" name="filter-status" id="filter-status" style="width: auto;">
+                        <option value="" selected>All</option>
+                        <option value="0">Pending</option>
+                        <option value="1">Approved</option>
+                        <option value="2">Rejected</option>
+                        <option value="3">In Progress</option>
+                        <option value="4">Executed</option>
+                        <option value="5">Completed</option>
                     </select>
                 </div>
-            @endif
+    
+                <div class="position-relative">
+                    <label for="filter-date_requested" style="white-space: nowrap; text-align:left;">Date Requested From: </label>
+                    <input type="date" class="form-control form-control-sm d-inline" name="filter-date_requested" id="filter-date_requested" style="width: auto;" value="{{ now()->startOfMonth()->format('Y-m-d') }}">
+                </div>
+    
+                @if (auth()->user()->id != 1)
+                    <div class="position-relative">
+                        <select class="form-select form-select-sm d-inline" name="filter-formsby" id="filter-formsby">
+                            <option value="1">Others</option>
+                            <option value="0">My PRF</option>
+                        </select>
+                    </div>
+                @endif
+            </div>
 
             <table id="prf-table" class="table table-striped table-hover no-wrap my-2 w-100">
                 <thead>
