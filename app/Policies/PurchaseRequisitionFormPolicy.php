@@ -117,6 +117,11 @@ class PurchaseRequisitionFormPolicy
             }
         }
 
+        // 5. Super Admin
+        if ($user->role_id === 1) {
+            return true;
+        }
+
         return false;
     }
 
