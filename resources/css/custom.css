@@ -309,9 +309,23 @@ input[type="search"] {
     opacity: 0.85;
 }
 
+.position-table-wrapper > button,
+.department-table-wrapper > button,
+.user-table-wrapper > button {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
 @media (min-width: 375px) {
     .upload-pdf-container {
         width: 250px;
+    }
+
+    .position-table-wrapper > button,
+    .department-table-wrapper > button,
+    .user-table-wrapper > button {
+        width: auto;
+        margin-bottom: 0;
     }
 }
 @media (min-width: 768px) {

@@ -3,7 +3,7 @@
 @section('content')
     <x-container pageTitle=" Position List">
         
-        <div class="">
+        <div class="position-table-wrapper">
             <button class="btn btn-sm btn-primary float-end position-relative z-1" data-bs-toggle="modal" data-bs-target="#addPositionModal">Add</button>
             <table id="positions-table" class="table table-hover table-striped my-2">
                 <thead>

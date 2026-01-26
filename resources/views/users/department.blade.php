@@ -4,7 +4,7 @@
     
 <x-container pageTitle="Department List">
     
-    <div>
+    <div class="department-table-wrapper">
         <button class="btn btn-sm btn-primary float-end add-btn position-relative z-1" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">Add</button>
         <table id="department-table" class="table table-hover table-striped my-2">
             <thead>

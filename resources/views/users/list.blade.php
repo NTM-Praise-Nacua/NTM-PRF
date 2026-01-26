@@ -3,7 +3,7 @@
 @section('content')
     <x-container pageTitle="User List">
         
-        <div class="">
+        <div class="user-table-wrapper">
             <button class="btn btn-sm btn-primary float-end add-btn position-relative z-1" data-bs-toggle="modal" data-bs-target="#addUserModal">Add</button>
             <table id="users-table" class="table table-hover table-striped my-2">
                 <thead>
