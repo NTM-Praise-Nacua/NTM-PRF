@@ -52,64 +52,6 @@
         .form-floating textarea {
             resize: none;
         }
-
-        .step-container {
-            min-width: 120px;
-            margin-bottom: 1rem;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .step-circle {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #ddd;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .step-circle.completed, .step-line.completed {
-            background-color: #198754; /* Bootstrap success color */
-        }
-
-        .step-circle.pending, .step-line.pending {
-            background-color: #f7bc0f;
-        }
-
-        .step-line {
-            height: 4px;
-            background-color: #ddd;
-            position: absolute;
-            top: 19%;
-            left: 70%;
-            right: -50%;
-            /* z-index: -1; */
-            transform: translateY(-50%);
-            width: 58%
-        }
-
-        @media (max-width: 768px) {
-            .d-flex.flex-wrap.justify-content-between {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .step-line {
-                width: 4px;
-                height: 40px;
-                top: 30px;
-                left: 15px;
-                right: auto;
-                transform: none;
-            }
-            .step-container {
-                margin-bottom: 2rem;
-            }
-        }
     </style>
 @endpush
 
@@ -128,7 +70,7 @@
         <div class="container my-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center header-flow">
                 @foreach($steps as $index => $step)
-                    <div class="col d-flex align-items-center flex-grow-1 position-relative step-container">
+                    <div class="col d-flex align-items-center flex-grow-1 position-relative step-container {{ $loop->last ? 'last' : '' }}">
                         <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : '') }}">
                             @if($step['status'] == 'completed')
                                 &#10003;
@@ -137,7 +79,7 @@
                             @endif
                         </div>
 
-                        <div class="ms-2">
+                        <div class="step-info">
                             <div class="fw-bold">{{ $step['name'] }}</div>
                             <small class="text-muted">{{ $step['date'] }}</small>
                         </div>
@@ -321,7 +263,7 @@
             <div class="upload-pdf-group row mb-3">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
-                    <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" accept="application/pdf" multiple>
+                    <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control @error('upload_pdf') is-invalid @enderror" accept="application/pdf" multiple>
                     <div class="invalid-feedback d-block">
                         @error('upload_pdf')
                         {{ $message }}
@@ -347,8 +289,6 @@
                             {{ $message }}
                             @enderror
                         </div>
-                    </div>
-                    <div class="col">
                     </div>
                 </div>
             </div>
@@ -493,14 +433,14 @@
                 
                 flow.forEach((item, index) => {
                     const divWrapper = $('<div></div>', {
-                        class: 'd-flex align-items-center flex-grow-1 position-relative step-container'
+                        class: `col d-flex align-items-center flex-grow-1 position-relative step-container ${index + 1 === flow.length ? 'last' : ''}`
                     });
                     const circle = $('<div></div>', {
                         class: "step-circle",
                         text: index + 1
                     });
                     const depText = $('<div></div>', {
-                        class: "ms-2",
+                        class: "step-info",
                         html: `<div class="fw-bold">${item}</div>
                             <small class="text-muted">---</small>`
                     });
@@ -537,6 +477,31 @@
             //     console.log("submitting creation Form");
             //     // action="{{ route('requisition.form.add') }}"
             // });
+
+            function hideLastLineInRow() {
+                const $steps = $('.step-container');
+
+                // Reset all step-lines
+                $steps.find('.step-line').show();
+
+                if ($(window).width() >= 768) {
+                    $steps.each(function(index) {
+                        const $current = $(this);
+                        const $next = $steps.eq(index + 1);
+
+                        if ($next.length && $next.position().top > $current.position().top) {
+                            // Next step wrapped to a new line
+                            $current.find('.step-line').hide();
+                        }
+                    });
+                }
+            }
+
+            hideLastLineInRow();
+
+            $(window).resize(function() {
+                hideLastLineInRow();
+            });
         });
     </script>
 @endpush

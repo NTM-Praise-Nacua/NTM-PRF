@@ -377,10 +377,12 @@ div:has(> .step-container) {
     flex-direction: column;
 }
 
+#creationForm,
 .reqFormEdit {
     margin-top: 0 !important;
 }
 
+#creationForm > div.row,
 .reqFormEdit > div.row {
     flex-direction: column;
     gap: 10px;
@@ -388,6 +390,10 @@ div:has(> .step-container) {
 
 .checkbox-group {
     display: flex;
+}
+
+#upload_pdf {
+    width: 100%;
 }
 
 @media (min-width: 375px) {
@@ -413,6 +419,10 @@ div:has(> .step-container) {
         margin-left: 2rem !important;
         margin-right: 2rem !important;
     }
+
+    #upload_pdf {
+        width: 75%;
+    }
 }
 
 @media (min-width: 768px) {
@@ -420,6 +430,7 @@ div:has(> .step-container) {
         width: 50%;
     }
 
+    #creationForm > div.row,
     .reqFormEdit > div.row {
         flex-direction: row;
         gap: 0;

@@ -324,7 +324,7 @@ class PurchaseRequisitionFormController extends Controller
         $completeFlow = PRWorkFlowSteps::with('department')->where('type_id', $request->request_id)->orderBy('id', 'asc')->get()
             ->map(function ($step) {
                 if ($step->department) {
-                    return $step->department->name;
+                    return $step->department->shortcut;
                 }
 
                 if ($step->ordering == -2) {
