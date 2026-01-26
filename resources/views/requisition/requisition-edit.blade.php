@@ -56,46 +56,6 @@
             resize: none;
         }
 
-        .step-container {
-            min-width: 120px;
-            margin-bottom: 1rem;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .step-circle {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #ddd;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .step-circle.completed, .step-line.completed {
-            background-color: #198754;
-        }
-
-        .step-circle.pending, .step-line.pending {
-            background-color: #f7bc0f;
-        }
-
-        .step-line {
-            height: 4px;
-            background-color: #ddd;
-            position: absolute;
-            top: 19%;
-            left: 70%;
-            right: -50%;
-            /* z-index: -1; */
-            transform: translateY(-50%);
-            width: 58%
-        }
-
         input[name="textPDFInput[]"]::placeholder {
             color: black;
         }
@@ -103,23 +63,12 @@
             border: 1px solid black !important;
         }
 
-        @media (max-width: 768px) {
+        /* @media (max-width: 768px) {
             .d-flex.flex-wrap.justify-content-between {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            .step-line {
-                width: 4px;
-                height: 40px;
-                top: 30px;
-                left: 15px;
-                right: auto;
-                transform: none;
-            }
-            .step-container {
-                margin-bottom: 2rem;
-            }
-        }
+        } */
 
         .draggable-input {
             border: none;
@@ -221,7 +170,7 @@
         <div class="container my-4">
             <div class="d-flex flex-wrap justify-content-between align-items-center">
                 @foreach($steps as $index => $step)
-                    <div class="col d-flex align-items-center flex-grow-1 position-relative step-container">
+                    <div class="col d-flex align-items-center flex-grow-1 position-relative step-container {{ $loop->last ? 'last' : '' }}">
                         <div class="step-circle {{ $step['status'] == 'completed' ? 'completed' : ($step['status'] == 'pending' ? 'pending' : ($step['status'] == 'rejected' ? 'bg-danger' : '')) }}">
                             @if($step['status'] == 'completed')
                                 &#10003;
@@ -232,7 +181,7 @@
                             @endif
                         </div>
 
-                        <div>
+                        <div class="step-info">
                             <div class="fw-bold">{{ $step['name'] }}</div>
                             <small class="text-muted" style="">{{ $step['date'] }}</small>
                         </div>
@@ -246,7 +195,7 @@
         </div>
 
         <hr class="border border-2 border-black">
-        <form action="{{ route('requisition.form.update', $requisition->id) }}" method="POST" class="my-5 needs-validation" enctype="multipart/form-data">
+        <form action="{{ route('requisition.form.update', $requisition->id) }}" method="POST" class="reqFormEdit my-5 needs-validation" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <h2 class="text-center">PURCHASE REQUISITION FORM</h2>
@@ -405,10 +354,10 @@
                 </div>
             </div>
 
-            <div class="mb-3">
+            <div class="mb-3 attachment-list-wrapper">
                 <label class="inline-block fs-5 fw-bold">Attachment(s)</label>
                 <div class="d-flex">
-                    <div class="col-3">
+                    <div class="col">
                         <div class="attachment-list p-1d-flex flex-column flex-wrap gap-2" style="max-height: 100px">
                             @forelse ($attachments as $attachment)
                                 <div>
@@ -419,7 +368,6 @@
                             @endforelse
                         </div>
                     </div>
-                    <div class="col viewPDF"></div>
                 </div>
             </div>
             <div class="upload-pdf-group row mb-3 {{ (($user->id == $requisition->request_by && $user->id != $requisition->assign_employee) || $user->role_id == 1 || in_array($requisition->status, [0, 4]) || ($requisition->status == 2 && $user->id != $requisition->assign_employee) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
@@ -460,7 +408,7 @@
             @if ($isBetween || ($requisition->status == 2 && $requisition->remarks))
             <div class="mb-3">
                 <h5>Remarks <span class="fs-6 fw-normal fst-italic">(optional)</span></h5>
-                <div class="form-floating w-50" style="min-width: 300px;">
+                <div class="form-floating">
                     <textarea id="remarks" name="remarks"  class="form-control" placeholder="Remarks" style="height: 130px"  {{ $requisition->status == 2 || ($isBetween && $user->id != $requisition->assign_employee && !$second_step) || ($second_step && count($tracker) > 2) ? 'disabled' : '' }}>{{ $requisition->remarks }}</textarea>
                     <label for="remarks">Remarks</label>
                 </div>
@@ -1081,15 +1029,62 @@
                 const modalBody = $('#requestStatusModal .modal-body');
                 modalBody.empty();
 
+                const isLarge = $(window).width() >= 1024;
+                const existingPDFView = accordion.find('.viewPDFModal');
+                
                 const flexContainer = $('<div class="d-flex"></div>');
-                const accordCol = $('<div class="col-4"></div>');
+                const accordCol = $(`<div class="${isLarge ? 'col-4' : 'col'}"></div>`);
                 const pdfViewCol = $('<div></div>', {
                     class: "col viewPDFModal overflow-auto"
                 });
                 accordCol.append(accordion);
-                modalBody.append(flexContainer.append(accordCol, pdfViewCol));
 
+                console.log('isLarge', isLarge);
+                
+                if (isLarge) {
+                    if (existingPDFView.length > 0) {
+                        console.log('existPDFView:', existingPDFView);
+                        existingPDFView.remove();
+                        modalBody.append(flexContainer.append(accordCol));
+                    } else {
+                        modalBody.append(flexContainer.append(accordCol, pdfViewCol));
+                    }
+                } else {
+                    modalBody.append(flexContainer.append(accordCol));
+                    const grandParent = $(linkEl).closest('div.collapse.show');
+                    console.log('grandParent: ', grandParent);
+                    
+                    existingPDFView.remove();
+                    if (existingPDFView.length <= 0) {
+                        grandParent.append(pdfViewCol);
+                    }
+                }
+
+                // console.log('linkEl: ', $(linkEl).parent());
                 viewPDF(linkEl, $('.viewPDFModal'), '1000px');
+            }
+
+            function repositionReqStatus() {
+                const pdfViewCol = $('.viewPDFModal');
+                if (pdfViewCol.length > 0) {
+                    const isLarge = $(window).width() >= 1024;
+                    const statusContainerParent = $('#requestStatusContainer').parent();
+
+                    if (isLarge && statusContainerParent.siblings('.viewPDFModal').length <= 0) {
+                        statusContainerParent.removeClass('col').addClass('col-4');
+                        pdfViewCol.detach();
+                        pdfViewCol.insertAfter(statusContainerParent);
+                    } else if (!isLarge && statusContainerParent.siblings('.viewPDFModal').length > 0) {
+                        statusContainerParent.removeClass('col-4').addClass('col');
+                        const src = pdfViewCol.find('iframe').attr('src');
+                        pdfViewCol.detach();
+
+                        const linkRef = $('a.attachment-item').filter(function() {
+                            return $(this).data('src') === src;
+                        });
+                        pdfViewCol.insertAfter(linkRef.parent());
+                    }
+                }
             }
 
             $('.approve-btn').on('click', function() {
@@ -1148,6 +1143,32 @@
                     }
                 });
             }
+
+            function hideLastLineInRow() {
+                const $steps = $('.step-container');
+
+                // Reset all step-lines
+                $steps.find('.step-line').show();
+
+                if ($(window).width() >= 768) {
+                    $steps.each(function(index) {
+                        const $current = $(this);
+                        const $next = $steps.eq(index + 1);
+
+                        if ($next.length && $next.position().top > $current.position().top) {
+                            // Next step wrapped to a new line
+                            $current.find('.step-line').hide();
+                        }
+                    });
+                }
+            }
+
+            hideLastLineInRow();
+
+            $(window).resize(function() {
+                hideLastLineInRow();
+                repositionReqStatus();
+            });
         });
     </script>
 @endpush

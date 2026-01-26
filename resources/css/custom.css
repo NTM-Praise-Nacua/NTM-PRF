@@ -316,6 +316,80 @@ input[type="search"] {
     margin-bottom: 10px;
 }
 
+/* For PRF View/Edit */
+.step-container {
+    min-width: 120px;
+    margin-bottom: 2rem;
+    flex-direction: column;
+    text-align: center;
+    /* addons */
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #ddd;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-circle.completed,
+.step-line.completed {
+    background-color: #198754;
+}
+
+.step-circle.pending,
+.step-line.pending {
+    background-color: #f7bc0f;
+}
+
+.step-line {
+    background-color: #ddd;
+    position: absolute;
+    width: 4px !important;
+    /* height: 40px;
+    top: 30px;
+    left: 15px; */
+    height: 36px;
+    top: 44px;
+    left: 13px;
+    right: auto;
+    transform: none;
+}
+
+.step-info {
+    min-width: 150px;
+}
+
+.step-container.last {
+    margin-bottom: 0 !important;
+}
+
+div:has(> .step-container) {
+    flex-direction: column;
+}
+
+.reqFormEdit {
+    margin-top: 0 !important;
+}
+
+.reqFormEdit > div.row {
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkbox-group {
+    display: flex;
+}
+
 @media (min-width: 375px) {
     .upload-pdf-container {
         width: 250px;
@@ -327,8 +401,53 @@ input[type="search"] {
         width: auto;
         margin-bottom: 0;
     }
+
+    div:has(> .step-container) {
+        margin-left: 1rem !important;
+        margin-right: 1rem !important;
+    }
 }
+
+@media (min-width: 425px) {
+    div:has(> .step-container) {
+        margin-left: 2rem !important;
+        margin-right: 2rem !important;
+    }
+}
+
 @media (min-width: 768px) {
+    div:has(> textarea#remarks) {
+        width: 50%;
+    }
+
+    .reqFormEdit > div.row {
+        flex-direction: row;
+        gap: 0;
+    }
+
+    div:has(> .step-container) {
+        flex-direction: row;
+        gap: 15px;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .step-line {
+        height: 4px;
+        top: 19%;
+        left: 70%;
+        right: -50%;
+        transform: translateY(-50%);
+        width: 58% !important;
+    }
+
+    .step-container {
+        margin-bottom: 1rem;
+        flex-direction: column;
+        gap: 15px;
+        align-self: flex-start;
+    }
+
     .main-wrapper {
         padding: 32px !important;
         margin-top: 32px;
