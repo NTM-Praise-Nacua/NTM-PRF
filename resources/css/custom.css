@@ -279,6 +279,36 @@ input[type="search"] {
     float: inline-end;
 }
 
+.wave-1 {
+    top: 0 !important;
+    border-radius: 0 !important;
+}
+
+.wave-2,
+.wave-3,
+.wave-4 {
+    display: none;
+}
+
+.card-wrapper {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.card-wrapper div > form > div {
+    padding-right: 1rem !important;
+    padding-left: 1rem !important;
+}
+
+.card-wrapper div > form > div > button {
+    background: linear-gradient(to top, #003a77, #176ecf);
+    transition: opacity 0.15s ease-in;
+}
+
+.card-wrapper div > form > div > button:hover {
+    opacity: 0.85;
+}
+
 @media (min-width: 375px) {
     .upload-pdf-container {
         width: 250px;
@@ -366,6 +396,21 @@ input[type="search"] {
         width: 45%;
         display: block;
     }
+    .wave-2,
+    .wave-3,
+    .wave-4 {
+        display: block;
+    }
+
+    .wave-1 {
+        top: -60% !important;
+        border-radius: 50% !important;
+    }
+
+    .card-wrapper div > form > div {
+        padding-right: 2rem !important;
+        padding-left: 2rem !important;
+    }
 }
 @media (min-width: 1024px) {
     .sidebar {
@@ -401,6 +446,16 @@ input[type="search"] {
     div:has(> input#filter-date_requested),
     div:has(> select#filter-formsby) {
         width: auto !important;
+    }
+
+    .card-wrapper {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+
+    .card-wrapper div > form > div {
+        padding-right: 3rem !important;
+        padding-left: 3rem !important;
     }
 }
 @media (min-width: 1280px) {

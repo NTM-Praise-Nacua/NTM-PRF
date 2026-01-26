@@ -95,48 +95,56 @@
         </div>
         @endauth
         <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
-            <nav class="primary-color navbar navbar-expand-md navbar-light shadow-sm position-sticky top-0" style="z-index: 10; height: 48px;">
-                <div class="d-flex align-items-center justify-content-between w-100 mx-2">
-    
-                    <div class="d-flex justify-content-end w-100 position-relative" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto">
-                            @guest
-                                @if (Route::has('login'))
-                                    <li class="nav-item">
-                                        <a class="nav-link text-white" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                    </li>
-                                @endif
-    
-                                @if (Route::has('register'))
-                                    <li class="nav-item">
-                                        <a class="nav-link text-white" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                    </li>
-                                @endif
-                            @else
-                                <li class="nav-item dropdown">
-                                    <a id="navbarDropdown" class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                        {{ Auth::user()->name }}
-                                    </a>
-    
-                                    <div class="dropdown-menu dropdown-menu-end shadow" style="position: absolute !important; top: 42px;" aria-labelledby="navbarDropdown">
-                                        <a class="dropdown-item" href="{{ route('logout') }}"
-                                           onclick="event.preventDefault();
-                                                         document.getElementById('logout-form').submit();">
-                                            {{ __('Logout') }}
+            @if(!request()->routeIs('login'))
+                <nav class="primary-color navbar navbar-expand-md navbar-light shadow-sm position-sticky top-0" style="z-index: 10; height: 48px;">
+                    <div class="d-flex align-items-center justify-content-between w-100 mx-2">
+        
+                        <div class="d-flex justify-content-end w-100 position-relative" id="navbarSupportedContent">
+                            <ul class="navbar-nav ms-auto">
+                                @guest
+                                    @if (Route::has('login'))
+                                        <li class="nav-item">
+                                            <a class="nav-link text-white" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                        </li>
+                                    @endif
+        
+                                    @if (Route::has('register'))
+                                        <li class="nav-item">
+                                            <a class="nav-link text-white" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                        </li>
+                                    @endif
+                                @else
+                                    <li class="nav-item dropdown">
+                                        <a id="navbarDropdown" class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                            {{ Auth::user()->name }}
                                         </a>
-    
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                            @csrf
-                                        </form>
-                                    </div>
-                                </li>
-                            @endguest
-                        </ul>
+        
+                                        <div class="dropdown-menu dropdown-menu-end shadow" style="position: absolute !important; top: 42px;" aria-labelledby="navbarDropdown">
+                                            <a class="dropdown-item" href="{{ route('logout') }}"
+                                            onclick="event.preventDefault();
+                                                            document.getElementById('logout-form').submit();">
+                                                {{ __('Logout') }}
+                                            </a>
+        
+                                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                                @csrf
+                                            </form>
+                                        </div>
+                                    </li>
+                                @endguest
+                            </ul>
+                        </div>
                     </div>
-                </div>
-            </nav>
+                </nav>
+            @endif
     
-            <main class="p-4 flex-grow-1 main d-flex justify-content-center">
+            <main class="p-4 flex-grow-1 main d-flex justify-content-center {{ request()->routeIs('login') ? 'body overflow-hidden' : '' }}">
+                @if(request()->routeIs('login'))
+                    <div class="wave-1"></div>
+                    <div class="wave-2"></div>
+                    <div class="wave-3"></div>
+                    <div class="wave-4"></div>
+                @endif
                 @yield('content')
             </main>
 
