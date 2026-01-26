@@ -396,6 +396,10 @@ div:has(> .step-container) {
     width: 100%;
 }
 
+div:has(> #next_department) {
+    max-width: 300px;
+}
+
 @media (min-width: 375px) {
     .upload-pdf-container {
         width: 250px;

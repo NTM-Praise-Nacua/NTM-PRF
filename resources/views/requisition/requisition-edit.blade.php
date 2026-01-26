@@ -373,7 +373,7 @@
             <div class="upload-pdf-group row mb-3 {{ (($user->id == $requisition->request_by && $user->id != $requisition->assign_employee) || $user->role_id == 1 || in_array($requisition->status, [0, 4]) || ($requisition->status == 2 && $user->id != $requisition->assign_employee) || ($requisition->assign_employee != $user->id && $requisition->status == 3)) ? 'd-none' : '' }}">
                 <div class="col">
                     <label for="upload_pdf" class="fs-5 fw-bold">Upload PDF</label>
-                    <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control w-75 @error('upload_pdf') is-invalid @enderror" accept="application/pdf" multiple>
+                    <input type="file" name="upload_pdf[]" id="upload_pdf" class="form-control @error('upload_pdf') is-invalid @enderror" accept="application/pdf" multiple>
                     <div class="invalid-feedback d-block">
                         @error('upload_pdf')
                         {{ $message }}
