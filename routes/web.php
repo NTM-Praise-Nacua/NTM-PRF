@@ -59,6 +59,9 @@ Route::group(['middleware' => 'auth'], function() {
     // Route::get('/user/{id}/edit', [UserController::class, 'edit'])->name('user.edit');
     // Route::post('/user/view', [UserController::class, 'update'])->name('user.update');
     Route::post('/user/update', [UserController::class, 'update'])->name('user.update');
+
+    Route::get('/user/password/change', [UserController::class, 'changePassword'])->name('password.change');
+    Route::post('/user/password/save', [UserController::class, 'saveNewPassword'])->name('password.change.save');
     
     Route::get('/department', [DepartmentController::class, 'index'])->name('department.list');
     Route::get('/department/data', [DepartmentController::class, 'getDepartmentsData'])->name('department.data');

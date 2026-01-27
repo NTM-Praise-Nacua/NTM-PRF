@@ -97,7 +97,7 @@
         <div class="d-flex flex-column flex-grow-1 position-relative overflow-y-auto">
             @if(!request()->routeIs('login'))
                 <nav class="primary-color navbar navbar-expand-md navbar-light shadow-sm position-sticky top-0" style="z-index: 10; height: 48px;">
-                    <div class="d-flex align-items-center justify-content-between w-100 mx-2">
+                    <div class="d-flex align-items-center justify-content-between w-100 ms-2 me-3">
         
                         <div class="d-flex justify-content-end w-100 position-relative" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-auto">
@@ -116,14 +116,32 @@
                                 @else
                                     <li class="nav-item dropdown">
                                         <a id="navbarDropdown" class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                            {{ Auth::user()->name }}
+                                            {{ Auth::user()->first_name[0] . Auth::user()->last_name[0] }}
                                         </a>
         
-                                        <div class="dropdown-menu dropdown-menu-end shadow" style="position: absolute !important; top: 42px;" aria-labelledby="navbarDropdown">
+                                        <div class="dropdown-menu dropdown-menu-end shadow p-2" style="position: absolute !important; top: 42px; width: 225px;" aria-labelledby="navbarDropdown">
+                                            <span class="custom-dropdown-item no-close" style="cursor:pointer;">
+                                                <div class="dropdown-item-icon">
+                                                    <x-icons.profile-icon></x-icons.profile-icon>
+                                                </div>
+                                                <div>{{ Auth::user()->first_name . " " . Auth::user()->last_name[0] }}</div>
+                                            </span>
+                                            <hr style="margin: 0.25rem 0 !important;">
+                                            <a href="{{ route('password.change') }}" class="dropdown-item">
+                                                <div class="dropdown-item-icon">
+                                                    <x-icons.lock-icon></x-icons.lock-icon>
+                                                </div>
+                                                <div>Change Password</div>
+                                            </a>
                                             <a class="dropdown-item" href="{{ route('logout') }}"
                                             onclick="event.preventDefault();
                                                             document.getElementById('logout-form').submit();">
-                                                {{ __('Logout') }}
+                                                <div class="dropdown-item-icon">
+                                                    <x-icons.off-icon></x-icons.off-icon>
+                                                </div>
+                                                <div>
+                                                    {{ __('Logout') }}
+                                                </div>
                                             </a>
         
                                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
@@ -300,6 +318,12 @@
 
         $('.sidenav .navbar-brand').on('click', function() {
             window.location.reload();
+        });
+
+        $(function() {
+            $('.no-close').on('click', function(e) {
+                e.stopPropagation();
+            });
         });
     </script>
 </body>

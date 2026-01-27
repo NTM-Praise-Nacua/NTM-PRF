@@ -400,6 +400,24 @@ div:has(> #next_department) {
     max-width: 300px;
 }
 
+.custom-dropdown-item,
+.dropdown-item {
+    display: flex !important;
+    align-items: center;
+    height: 36px !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 0.25rem !important;
+}
+
+.custom-dropdown-item:hover,
+.dropdown-item:hover {
+    background-color: #dee2e6;
+}
+
+.dropdown-item-icon {
+    width: 30px;
+}
+
 @media (min-width: 375px) {
     .upload-pdf-container {
         width: 250px;

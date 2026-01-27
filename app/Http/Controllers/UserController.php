@@ -222,6 +222,38 @@ class UserController extends Controller
         ]);
     }
 
+    public function changePassword()
+    {
+        return view('auth.passwords.change');
+    }
+
+    public function saveNewPassword(Request $request)
+    {
+        $request->validate([
+            'password' => 'required',
+            'password_confirmation' => 'required',
+        ]);
+
+        $oldPassword = $request->password_confirmation;
+        $newPassword = $request->password;
+
+        if ($oldPassword == auth()->user()->weak_password) {
+            $user = User::find(auth()->user()->id);
+            $user->password = Hash::make($newPassword);
+            $user->weak_password = $newPassword;
+            $user->save();
+
+            return redirect()->back()->with([
+                'type' => 'success',
+                'message' => 'Password Updated'
+                ]);
+        } else {
+            return redirect()->back()->with([
+                'type' => 'error',
+                'message' => 'Incorrect Old Password'
+                ]);
+        }
+    }
     /**
      * Remove the specified resource from storage.
      *

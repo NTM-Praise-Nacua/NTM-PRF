@@ -14,3 +14,7 @@ import "datatables.net-bs5/css/dataTables.bootstrap5.css";
 
 import "../css/custom.css";
 import "bootstrap-datepicker";
+
+import toastr from "toastr";
+import "toastr/build/toastr.min.css";
+window.toastr = toastr;

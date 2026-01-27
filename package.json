@@ -27,6 +27,7 @@
         "datatables.net": "^2.3.5",
         "datatables.net-bs5": "^2.3.5",
         "pdf-lib": "^1.17.1",
-        "sweetalert2": "^11.26.3"
+        "sweetalert2": "^11.26.3",
+        "toastr": "^2.1.4"
     }
 }
