@@ -152,17 +152,19 @@
                 </div>
             </div>
         </div>
-        <hr>
-        <div class="row mx-0 mt-3 gap-3">
-            <div class="info-card card shadow bg-forapproval bg-gradient border-0">
-                <div class="card-body fw-bold text-center">
-                    <p class="fs-6">For Approval</p>
-                    <span>
-                        <p class="fs-1">{{ $counters['forApproval'] }}</p>
-                    </span>
+        @if (auth()->user()->role_id !== 1 && $isApprover)
+            <hr>
+            <div class="row mx-0 mt-3 gap-3">
+                <div class="info-card card shadow bg-forapproval bg-gradient border-0">
+                    <div class="card-body fw-bold text-center">
+                        <p class="fs-6">For Approval</p>
+                        <span>
+                            <p class="fs-1">{{ $counters['forApproval'] }}</p>
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
     </x-container>
 @endsection
 

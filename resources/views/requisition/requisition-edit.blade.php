@@ -592,11 +592,14 @@
                         departments.forEach((dept, index) => {
                             if (dept === "N/A") {
                                 departments[index] = "Immediate Head";
-                                naIndexes.push(index);
+                                if (index !== 1 && !naIndexes.includes(1)) {
+                                    naIndexes.push(1);
+                                } else {
+                                    naIndexes.push(index);
+                                }
                             }
                         });
 
-                        console.log('response: ', res);
                         
                         // console.log('before files: ', files);
                         // return;

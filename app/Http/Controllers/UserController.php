@@ -117,7 +117,7 @@ class UserController extends Controller
         $position = $request->position;
         $department = $request->department;
         $role = $request->role;
-        // $approver = $request->approver;
+        $approver = $request->input('approver', null);
         
         $email = $request->email;
         $password = Hash::make($request->password);
@@ -133,7 +133,7 @@ class UserController extends Controller
             'contact_no' => $contact,
             'department_id' => $department,
             'role_id' => $role,
-            // 'approver_id' => $approver,
+            'approver_id' => $approver,
             'position_id' => $position,
         ]);
 

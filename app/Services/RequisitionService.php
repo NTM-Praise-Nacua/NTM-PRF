@@ -52,7 +52,19 @@ class RequisitionService
 
     $forApproval = PurchaseRequisitionForm::where('status', 0)
       ->whereBetween('created_at', [$start, $end])
-      ->whereHas('requestBy', fn($q) => $q->where('approver_id', $userId))
+      ->where(function ($query) use ($userId) {
+          $query->whereHas('requestBy', function ($q) use ($userId) {
+              $q->where('approver_id', $userId);
+          })
+          ->orWhere(function ($query) use ($userId) {
+              $query->whereHas('requestBy', function ($q) {
+                  $q->whereNull('approver_id');
+              })
+              ->whereHas('departmentApprover', function ($q) use ($userId) {
+                  $q->where('approver', $userId);
+              });
+          });
+      })
       ->count();
 
     $total = $pending + $approved + $rejected + $inProgress + $executed + $completed;

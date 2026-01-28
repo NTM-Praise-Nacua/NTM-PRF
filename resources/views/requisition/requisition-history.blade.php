@@ -348,6 +348,7 @@
                 const btnAssign = $('.btn-assignto');
                 btnAssign.css('display', 'inline-block');
                 $(this).parent().remove();
+                $('.check-btn').parent().remove();
             });
 
             $(document).on('click', '.check-btn', function() {

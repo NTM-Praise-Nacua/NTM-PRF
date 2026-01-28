@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
+use App\Models\User;
 use App\Services\RequisitionService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -32,6 +34,8 @@ class HomeController extends Controller
         $formatMonthYear = Carbon::createFromFormat('m-Y', $monthYear);
         $formatted = $formatMonthYear->format('M. Y');
         
-        return view('dashboard', compact('counters', 'formatted'));
+        $isApprover = User::where('approver_id', auth()->user()->id)->exists() || Department::where('approver', auth()->user()->id)->exists();
+        
+        return view('dashboard', compact('counters', 'formatted', 'isApprover'));
     }
 }
