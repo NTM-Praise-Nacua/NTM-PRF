@@ -230,10 +230,10 @@ class PurchaseRequisitionFormController extends Controller
 
         $requisition = PurchaseRequisitionForm::find($request->id);
         // $PRFWorkflow = $requisition->workflowSteps()->orderBy('id', 'asc')->get();
-        $requestType = RequestType::find($requisition->request_type);
-        if (($requestType->slug == "laptop_plan" || strtolower($request->name) == "laptop plan") && $status == 1) {
-            $empId = 34; // Ashvee
-        }
+        // $requestType = RequestType::find($requisition->request_type);
+        // if (($requestType->slug == "laptop_plan" || strtolower($request->name) == "laptop plan") && $status == 1) {
+        //     $empId = 34; // Ashvee
+        // }
 
         $skip = $status == 2 ? 1 : 0;
         $latestTracker = $requisition->tracker()
@@ -241,7 +241,7 @@ class PurchaseRequisitionFormController extends Controller
             ->orderBy('id', 'desc')
             ->skip($skip)
             ->first();
-
+                
         if ($latestTracker) {
             $latestTracker->submitted_at = now();
             $latestTracker->save();
@@ -767,10 +767,10 @@ class PurchaseRequisitionFormController extends Controller
             }
 
             $assign_employee = null;
-            $requestType = RequestType::find($requisition->request_type);
-            if (($requestType->slug == "laptop_plan" || strtolower($request->name) == "laptop plan") && $requisition->next_department === 2) { // checks if the currently assigned department is from HR
-                $assign_employee = 45;  // Jojel Bautista
-            }
+            // $requestType = RequestType::find($requisition->request_type);
+            // if (($requestType->slug == "laptop_plan" || strtolower($request->name) == "laptop plan") && $requisition->next_department === 2) { // checks if the currently assigned department is from HR
+            //     $assign_employee = 45;  // Jojel Bautista
+            // }
                 
             $requisition->remarks = null;
             $requisition->status = 3;
