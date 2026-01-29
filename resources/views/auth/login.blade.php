@@ -57,8 +57,9 @@
 @section('content')
 <div class="container" style="z-index: 10;">
     <div class="row justify-content-center">
-        <div class="col-md-5 card-wrapper d-flex justify-content-center mb-3">
-            <h2 class="fw-bold text-white text-center" style="text-shadow: 0 1px 2px black;">Purchase Requisition System</h2>
+        <div class="col-md-5 card-wrapper d-flex justify-content-center mb-3 gap-2">
+            <x-icons.system-icon :large="true" :shadow="true"></x-icons.system-icon>
+            <h2 class="fw-bold text-white text-center" style="text-shadow: 0 1px 2px black;">PurchaseFlow</h2>
         </div>
     </div>
     <div class="row justify-content-center">
